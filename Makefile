@@ -8,5 +8,5 @@ data:
 	@python ./parsers/pre_run.py ./data/2010
 	@echo "${GREEN}Data parsed; visualizing ${END}"
 
-	@python ./tools/visualizer.py ./parsers/data.csv
+	@python ./tools/visualizer.py ./data.csv
 
