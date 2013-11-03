@@ -3,7 +3,6 @@
 
 import sys
 import os
-from utils.data import transformDttm, transformMonth
 
 # The CSV file this will output data to
 
@@ -36,22 +35,22 @@ def transformDttm(month, year):
 # Given a line, transforms these into numbers
 # Consult the docYYYY.pdf record format for more info
 
-def extract_datetime(line):
+def extractDatetime(line):
     month = line[0:2]
     year = line[2:6]
     return transformDttm(month, year)
 
-def extract_day_of_week(line):
+def extractDayOfWeek(line):
     return line[6]
 
-def extract_age(line):
+def extractAge(line):
     return line[7:10]
 
-def extract_sex(line):
+def extractSex(line):
     sex = line[10]
     return "F" if int(sex) == 1 else "M"
 
-def extract_ethnicity(line):
+def extractEthnicity(line):
     code = int(line[11:13])
     if code == -9:
         return "NULL"
@@ -60,13 +59,16 @@ def extract_ethnicity(line):
     elif code == 2:
         return "Nonhisp/L"
 
+def extractTimeWithMd(line):
+    return int(line[291:293])
+
 # ...
 # Too many fields to keep writing extracters. We should
 # be doing MAX 20 features for now...
 
 # --- Main ---
 
-int line_counter = 0
+line_counter = 0
 
 def printStats():
     global line_counter
@@ -82,7 +84,7 @@ def writeOut(line):
     """
     global outfile - assumed to be an opened file to write out to
     """
-    gobal outfile
+    global outfile
     _writeline(outfile, line)
 
 def processlineW(line):
@@ -92,42 +94,37 @@ def processlineW(line):
     global line_counter
 
     fields = [
-        extract_datetime(line),
-        extract_day_of_week(line),
-        extract_age(line),
-        extract_sex(line),
-        extract_ethnicity(line),
+        str(extractTimeWithMd(line)),
         # ... too many fields to do them all here
     ]
     writeOut(DELIM.join(fields))
     line_counter += 1
 
 # CSV column headers
-headers = [
-    "datetime",
-    "day_of_week",
-    "age",
-    "sex",
-    "ethnicity",
-    # ... Too many fields here. Decide max 20
-]
+# headers = [
+#     "datetime",
+#     "day_of_week",
+#     "age",
+#     "sex",
+#     "ethnicity",
+#     ""
+# ]
 
-def writeHeaders():
-    global outfile
-    global headers
+# def writeHeaders():
+#     global outfile
+#     global headers
 
-    line = DELIM.join(headers)
-    writeline(line)
+#     line = DELIM.join(headers)
+#     writeOut(line)
 
 def main(argv):
     global outfile
 
     cwd = os.getcwd()
-    path = os.path.join(cwd, 'data')
-    if len(argv) > 2:
-        path = os.path.join(cwd, argv[1])
+    path = cwd
 
-    # writeHeaders()  # No need now
+    if len(argv) >= 2:
+        path = os.path.join(cwd, argv[1])
     
     with open(path) as f:
         for line in f:
