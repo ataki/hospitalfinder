@@ -16,7 +16,7 @@ import sys
 import os
 
 # Modify this to fit your own custom function naem
-FIELD_EXTRACTOR_NAME = 'extractSex'
+FIELD_EXTRACTOR_NAME = 'extractTimeWithMd'
 
 # The CSV file this will output data to
 outfile = open(os.path.join(os.getcwd(), 'data', '2010.csv'), 'w')
