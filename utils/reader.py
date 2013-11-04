@@ -11,7 +11,6 @@ Usage:
     
     (y, x) = reader.read(path_to_data_file)
 
-
 """
 
 import datetime

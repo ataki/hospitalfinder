@@ -1,11 +1,14 @@
 RED = \033[0;31m
 GREEN = \033[0;32m
 END = \033[0m
+HR = \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
 
 .PHONY: test data
 
-time_with_md_visualization:
-	@python ./tools/parser.py ./data/2010
-	@echo "${GREEN}Data parsed; visualizing ${END}"
-	@python ./tools/time_with_md_visualizer.py ./data/2010.csv
-
+field_histogram:
+	@echo "${HR}"
+	@echo "Visualizes the field specified in tools/parser"
+	@echo "${HR}"
+	@python ./tools/parser ./data/2010
+	@echo "${GREEN}Data parsed; constructing histogram ${END}"
+	@python ./tools/field_visualizer ./data/2010.csv

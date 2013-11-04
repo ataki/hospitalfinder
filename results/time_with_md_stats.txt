@@ -1,9 +1,14 @@
+######################################################
+Visualizes the field specified in tools/parser
+######################################################
 Lines processed: 31229
+[0;32mData parsed; constructing histogram [0m
+Visualizes a single field's distribution via histogram over a given dataset.
 Number of distinct points:  90
 Mean 20.6071600115
 Median 15.0
 Standard deviation:  12.032219279
-    Time With MD     :    Count  	   
+    Field    :    Count  			   
 ----------------------------------------
    0    :     858    
    1    :     14    
