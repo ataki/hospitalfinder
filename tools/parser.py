@@ -1,5 +1,5 @@
-# Outputs things into csv
-# Usage: python pre_run.py <optional path_to_file (relative to current dir)>
+# Outputs main 2010 data into csv 
+# Usage: python .py <optional path_to_file (relative to current dir)>
 
 import sys
 import os
