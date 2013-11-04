@@ -1,7 +1,8 @@
 Welcome to our CS 229 Final Project Repo! 
 ---
 
-# About
+About
+---
 
 Stanford University, CS 229 Fall 2013-14 Final Project. 
 
@@ -14,13 +15,15 @@ Statistics.
 
 TODO: Describe in more detail
 
-# Authors
+Authors
+---
 
 Jim Zheng
 Yannis Petousis
 Scott Cheng
 
-# Helpful commands
+Helpful commands
+---
 
 We use a Makefile to automate away some basic tasks.
 
@@ -29,7 +32,8 @@ The following data processing tasks take all data in the /data folder
 `make csv` outputs giant csv file into / 
 `make sql` outputs files, then puts them into the test sql database
 
-# Contributing
+Contributing
+---
 
 Write tests for your code!
 
