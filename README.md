@@ -33,6 +33,7 @@ We use a Makefile to automate away some basic tasks.
 Available distributions (+ means implemented)
 
 [-] Naive Bayes
+
 [-] Linear Regression
 
 TODO: Add to this list
