@@ -4,9 +4,9 @@ END = \033[0m
 
 .PHONY: test data
 
-data:
-	@python ./parsers/pre_run.py ./data/2010
+time_with_md_visualization:
+	@python ./tools/parser.py ./data/2010
 	@echo "${GREEN}Data parsed; visualizing ${END}"
 
-	@python ./tools/visualizer.py ./data.csv
+	@python ./tools/time_with_md_visualizer.py ./data/2010.csv
 

@@ -1,12 +1,14 @@
-# Outputs main 2010 data into csv 
-# Usage: python .py <optional path_to_file (relative to current dir)>
+"""
+Outputs data formatted according to the 2010 data into csv 
+Usage: python .py <optional path_to_file (relative to current dir)>
+"""
 
 import sys
 import os
 
 # The CSV file this will output data to
 
-outfile = open(os.path.join(os.getcwd(), 'data.csv'), 'w')
+outfile = open(os.path.join(os.getcwd(), 'data', '2010.csv'), 'w')
 
 # csv's delimiter; change to whatever you want
 
