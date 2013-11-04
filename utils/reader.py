@@ -6,8 +6,8 @@ Usage:
     import reader
 
     # Returns a tuple (y, x)
-    # y is an array of training data.
-    # x is an array of training examples.
+    # y is a numpy.array of training data.
+    # x is a numpy.array of training examples.
 
     # Takes in 
     # 
@@ -22,6 +22,8 @@ Usage:
     (y, x) = reader.read(path_to_data_file, extractFeaturesFn, extractLabelFn)
 
 """
+import sys
+from numpy import array
 
 # --------------------------------------------------------
 # Sample. Used as dummy defaults. 
@@ -48,7 +50,11 @@ def extractLabel(line):
 # -----------------------------------------------
 # Main Exports
 
-def read(filename, extractFeaturesFn=None, extractLabelFn=None):
+def printAndExit(msg):
+    print msg
+    sys.exit(1)
+
+def read(filename, extractFeaturesFn=None, extractLabelsFn=None, limit=None):
 
     # labels
     y = []
@@ -56,16 +62,19 @@ def read(filename, extractFeaturesFn=None, extractLabelFn=None):
     # features
     x = []
 
-    if not extractFeaturesFn:
-        extractFeaturesFn = extractFeatures
+    if extractFeaturesFn == None:
+        printAndExit("Reader requires a extractFeaturesFn")
 
-    if not extractFeaturesFn:
-        extractLabelFn = extractLabel
+    if extractLabelsFn == None:
+        printAndExit("Reader requires a extractLabelsFn")
 
+    counter = 0
     with open(filename, 'r') as f:
         for line in f:
-            x.append(extractFeaturesFn(line))
-            y.append(extractLabelFn(line))
+            if limit != None and counter < limit:
+                x.append(extractFeaturesFn(line))
+                y.append(extractLabelsFn(line))
+                counter += 1
 
-    return (y, x)
+    return (array(y), array(x))
 

@@ -16,7 +16,7 @@ import sys
 import os
 
 # Modify this to fit your own custom function naem
-FIELD_EXTRACTOR_NAME = 'extractAge'
+FIELD_EXTRACTOR_NAME = 'extractSex'
 
 # The CSV file this will output data to
 outfile = open(os.path.join(os.getcwd(), 'data', '2010.csv'), 'w')
@@ -55,7 +55,8 @@ def extractAge(line):
 
 def extractSex(line):
     sex = line[10]
-    return "F" if int(sex) == 1 else "M"
+    # return "F" if int(sex) == 1 else "M"
+    return int(sex)
 
 def extractEthnicity(line):
     code = int(line[11:13])
