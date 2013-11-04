@@ -1,9 +1,6 @@
 Welcome to our CS 229 Final Project Repo! 
 ---
 
-About
----
-
 Stanford University, CS 229 Fall 2013-14 Final Project. 
 
 We are looking to use various ML techniques to predict length of stay. 
