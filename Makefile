@@ -7,6 +7,5 @@ END = \033[0m
 time_with_md_visualization:
 	@python ./tools/parser.py ./data/2010
 	@echo "${GREEN}Data parsed; visualizing ${END}"
-
 	@python ./tools/time_with_md_visualizer.py ./data/2010.csv
 
