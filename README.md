@@ -16,7 +16,9 @@ Authors
 ---
 
 Jim Zheng
+
 Yannis Petousis
+
 Scott Cheng
 
 Helpful commands
@@ -24,14 +26,18 @@ Helpful commands
 
 We use a Makefile to automate away some basic tasks.
 
-The following data processing tasks take all data in the /data folder
+`make field_histogram` plots a histogram for single field values. 
 
-`make csv` outputs giant csv file into / 
-`make sql` outputs files, then puts them into the test sql database
+`make <distribution>` creates a plot for the specified visualization.
+
+Available distributions (+ means implemented)
+
+[-] Naive Bayes
+[-] Linear Regression
+
+TODO: Add to this list
 
 Contributing
 ---
 
-Write tests for your code!
-
-TODO: List contributions
+Write tests. Create distributions. Do the writeup
