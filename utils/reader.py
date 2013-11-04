@@ -71,7 +71,9 @@ def read(filename, extractFeaturesFn=None, extractLabelsFn=None, limit=None):
     counter = 0
     with open(filename, 'r') as f:
         for line in f:
-            if limit != None and counter < limit:
+            if limit != None and counter > limit:
+                break
+            else:
                 x.append(extractFeaturesFn(line))
                 y.append(extractLabelsFn(line))
                 counter += 1

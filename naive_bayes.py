@@ -13,7 +13,7 @@ import time
 import datetime
 import sys
 
-LIMIT = 1000
+LIMIT = None
 
 # ---------------------------------------------------------
 # Model
