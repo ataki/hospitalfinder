@@ -1,3 +1,10 @@
+"""
+Milestone 1:
+
+Implements Naive Bayes Classifier for hospital data.
+Takes parsers 
+"""
+from ... import reader
 import matplotlib.pyplot as plt
 import numpy
 import sys
@@ -27,7 +34,7 @@ def plot_count(fp):
 
 def main(argv):
 	if len(argv) < 2:
-		print "Usage: python visualizer.py <csv_name>"
+		print "Usage: python naive_bayes.py <csv_name>"
 	fp = open(argv[1], 'r')
 	plot_count(fp)
 	fp.close()

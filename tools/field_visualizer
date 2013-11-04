@@ -1,3 +1,10 @@
+#!/usr/bin/python
+"""
+Outputs data formatted according to the 2010 data into csv 
+Usage: field_visualizer <path_to_file>
+path is relative to local directory
+"""
+
 import matplotlib.pyplot as plt
 import numpy
 import sys
@@ -17,7 +24,7 @@ def plot_count(fp):
 	print "Median", numpy.median(data)
 	print "Standard deviation: ", numpy.std(data)
 
-	print "    Time With MD     :    Count  	   "
+	print "    Field    :    Count  			   "
 	print "----------------------------------------"
 	for k, v in counts.items():
 		print "   %d    :     %d    " % (k, v) 
@@ -27,7 +34,10 @@ def plot_count(fp):
 
 def main(argv):
 	if len(argv) < 2:
-		print "Usage: python visualizer.py <csv_name>"
+		print "Usage: field_visualizer <csv_name>"
+
+	print "Visualizes a single field's distribution via histogram over a given dataset."
+
 	fp = open(argv[1], 'r')
 	plot_count(fp)
 	fp.close()

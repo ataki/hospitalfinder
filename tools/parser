@@ -1,6 +1,9 @@
+#!/usr/bin/python
+
 """
 Outputs data formatted according to the 2010 data into csv 
-Usage: python .py <optional path_to_file (relative to current dir)>
+Usage: parser <path_to_file>
+path is relative to local directory
 """
 
 import sys
@@ -101,23 +104,6 @@ def processlineW(line):
     ]
     writeOut(DELIM.join(fields))
     line_counter += 1
-
-# CSV column headers
-# headers = [
-#     "datetime",
-#     "day_of_week",
-#     "age",
-#     "sex",
-#     "ethnicity",
-#     ""
-# ]
-
-# def writeHeaders():
-#     global outfile
-#     global headers
-
-#     line = DELIM.join(headers)
-#     writeOut(line)
 
 def main(argv):
     global outfile
