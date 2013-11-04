@@ -22,6 +22,8 @@ def plot_count(fp):
 	print "Number of distinct points: ", len(counts.keys())	
 	print "Mean", numpy.mean(data)
 	print "Median", numpy.median(data)
+	print "Max", numpy.max(data)
+	print "Min", numpy.min(data)
 	print "Standard deviation: ", numpy.std(data)
 
 	print "    Field    :    Count  			   "

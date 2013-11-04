@@ -3,9 +3,10 @@
 """
 Visualizes a given field.
 
-Look at the function processlineW()
-and modify the return value to be the
-field you want.
+FIELD_EXTRACTOR_NAME specifies the function name as a 
+string. If you want to extract a custom field, specify
+your own extractor function and define it as a global 
+function.
 
 Usage: parser <path_to_file>
 path is relative to local directory
@@ -13,6 +14,9 @@ path is relative to local directory
 
 import sys
 import os
+
+# Modify this to fit your own custom function naem
+FIELD_EXTRACTOR_NAME = 'extractAge'
 
 # The CSV file this will output data to
 outfile = open(os.path.join(os.getcwd(), 'data', '2010.csv'), 'w')
@@ -84,9 +88,7 @@ def writeOut(line):
 def processlineW(line):
     global line_counter
     fields = [
-        # Modify the field extraction function below here.
-        # This should be at most 1 field
-        str(extractTimeWithMd(line)),
+        str(globals()[FIELD_EXTRACTOR_NAME](line)),
     ]
     writeOut(DELIM.join(fields))
     line_counter += 1
