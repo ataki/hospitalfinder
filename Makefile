@@ -13,7 +13,7 @@ field_histogram:
 	@echo "${GREEN}Data parsed; constructing histogram ${END}"
 	@python tools/field_visualizer data/2010.csv
 
-naive_bayes:
+nbayes:
 	@echo "${HR}"
 	@echo "Naive Bayes Train on 2010 Data"
 	@echo "${HR}"
