@@ -18,3 +18,6 @@ nbayes:
 	@echo "Naive Bayes Train on 2010 Data"
 	@echo "${HR}"
 	@python naive_bayes.py data/2010
+
+clean:
+	@echo "li"
