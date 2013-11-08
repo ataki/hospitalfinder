@@ -20,3 +20,6 @@ nbayes:
 	@echo "Naive Bayes Train on ${YEAR} Data"
 	@echo "${HR}"
 	@python naive_bayes.py data/${YEAR}
+
+clean:
+	rm *.pyc
