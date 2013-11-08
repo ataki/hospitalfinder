@@ -21,5 +21,6 @@ nbayes:
 	@echo "${HR}"
 	@python naive_bayes.py data/${YEAR}
 
-clean:
-	rm *.pyc
+clean: 
+	@rm *.pyc
+	@echo "Done"
