@@ -31,7 +31,7 @@ def plot_count(fp):
 	for k, v in counts.items():
 		print "   %d    :     %d    " % (k, v) 
 
-	plt.hist(data, 50)
+	plt.hist(data, 10)
 	plt.show()
 
 def main(argv):

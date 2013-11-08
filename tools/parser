@@ -19,7 +19,8 @@ import os
 FIELD_EXTRACTOR_NAME = 'extractTimeWithMd'
 
 # The CSV file this will output data to
-outfile = open(os.path.join(os.getcwd(), 'data', '2010.csv'), 'w')
+# outfile = open(os.path.join(os.getcwd(), 'data', '2010.csv'), 'w')
+outfile = ''
 
 # csv's delimiter
 DELIM = ","
@@ -96,10 +97,13 @@ def processlineW(line):
 
 def main(argv):
     global outfile
+
     cwd = os.getcwd()
     path = cwd
     if len(argv) >= 2:
         path = os.path.join(cwd, argv[1])
+
+    outfile = open(path + ".csv", "w")
     with open(path) as f:
         for line in f:
             processlineW(line)

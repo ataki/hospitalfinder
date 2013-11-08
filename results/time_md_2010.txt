@@ -7,6 +7,8 @@ Visualizes a single field's distribution via histogram over a given dataset.
 Number of distinct points:  90
 Mean 20.6071600115
 Median 15.0
+Max 98
+Min 0
 Standard deviation:  12.032219279
     Field    :    Count  			   
 ----------------------------------------
