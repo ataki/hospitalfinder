@@ -1,25 +1,23 @@
 """
 Library for common reading functions for data.
 
+Returns a tuple (y, x)
+y is a numpy.array of training data.
+x is a numpy.array of training examples.
+Takes in 
+
+`path_to_data_file` Absolute path
+
+`extractFeaturesFn(line)` Given a string representing a line, returns 
+ an array corresponding to a set of features
+
+`extractLabel(line)` Given a string representing a line, returns
+a value corresponding to a labeling
+
 Usage:
 
-    import reader
-
-    # Returns a tuple (y, x)
-    # y is a numpy.array of training data.
-    # x is a numpy.array of training examples.
-
-    # Takes in 
-    # 
-    # `path_to_data_file` Absolute path
-    #
-    # `extractFeaturesFn(line)` Given a string representing a line, returns 
-    #  an array corresponding to a set of features
-    #
-    # `extractLabel(line)` Given a string representing a line, returns
-    # a value corresponding to a labeling
-    
-    (y, x) = reader.read(path_to_data_file, extractFeaturesFn, extractLabelFn)
+    import reader    
+    y, x = reader.read(path_to_data_file, extractFeaturesFn, extractLabelFn)
 
 """
 import sys
