@@ -49,7 +49,7 @@ class Model(object):
 
 		# categories: array
 		# distinct values that y takes on
-		self.categories, self.pCount= self._countCategories()
+		self.yUnique, self.pCount= self._countCategories()
 
 		# p_labels: array
 		# each entry gives the probability of the corresponding label
@@ -59,7 +59,7 @@ class Model(object):
 		# each value is an array of featureMaps
 		# each featureMap gives a mapping of {featureValue: probabilityOfOccurence}
 		self.pFeatures = {}
-		for cat in self.categories:
+		for cat in self.yUnique:
 			self.pFeatures[cat] = self._countFeaturesForCategory(cat)
 
 	def classify(self, example):
@@ -69,7 +69,7 @@ class Model(object):
 		"""
 		max_likelihood = 0
 		prediction = None
-		for label in self.featureValues:
+		for label in self.yUnique:
 			likelihood = self._calculateLikelihood(example, label)
 			if likelihood > max_likelihood:
 				max_likelihood = likelihood
@@ -110,7 +110,7 @@ class Model(object):
 			decision, likelihood = self.classify(example)
 			if decision != correctLabel:
 				error += float(1)
-		return error / float(len(correctLabel))
+		return error / float(len(testCategories))
 	
 	def _getCrossValidationSimpleData(self):
 		permutation = np.random.permutation(self.aggregateRows)
@@ -133,7 +133,6 @@ class Model(object):
 	def _getCrossValidationKFoldData(self, ith, permutation):
 		global KFOLD_LEVEL
 
-		# indices that define ith bucket
 		bstart = ith * permutation
 		bend = (ith + 1) * permutation
 
@@ -196,13 +195,19 @@ class Model(object):
 		return featureMaps
 
 	def _calculateLikelihood(self, example, label):
+		"""
+		Given a training vector (example) and a classified
+		"""
 		# Takes exp(sum(logs(probabilities)))
 		log_likelihood = float(0)
 		featureMappings = self.pFeatures[label]
 		for i in range(0, len(example)):
 			mapping = featureMappings[i]
 			value = example[i]
-			prob = mapping[value]
+			try:
+				prob = mapping[value]
+			except KeyError:
+				prob = float(1) / float(len(mapping.keys()))
 			# can we ignore 0 values here?
 			assert(prob != 0)
 			log_likelihood += log(prob)
@@ -238,15 +243,16 @@ def extractLabel(line):
 # Main
 
 def main(argv):
-	if len(argv) < 2:
-		print "Usage: python naive_bayes.py <train_csv> <test_csv>"
+	if len(argv) < 3:
+		print "Usage: python naive_bayes.py <train_data> <test_data>"
 
 	y, x = reader.read(argv[1], extractFeaturesFn=extractFeatures, extractLabelsFn=extractLabel, limit=LIMIT)
 	testY, testX = reader.read(argv[2], extractFeaturesFn=extractFeatures, extractLabelsFn=extractLabel, limit=LIMIT)
 
 	model = Model()
 	model.train(x, y)
-	model.predict(testX, testY)
+	error = model.predict(testX, testY)
+	print "Error: %f" % error
 
 if __name__ == "__main__":
 	main(sys.argv)
