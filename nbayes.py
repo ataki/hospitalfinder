@@ -16,7 +16,7 @@ import sys
 from math import log, exp
 
 # Debugging: Controls how many lines reader reads in
-LIMIT = 1000
+LIMIT = None
 
 # Number of buckets to divide dataset into for kfolding
 KFOLD_LEVEL = 10
@@ -111,7 +111,7 @@ class Model(object):
 		error = float(0)
 		for example, correctLabel in zip(testExamples, testCategories):
 			decision, likelihood = self.classify(example)
-			print "Decision: ", decision, "   Correct: ", correctLabel
+			# print "Decision: ", decision, "   Correct: ", correctLabel
 			if decision != correctLabel:
 				error += float(1)
 			# else:
@@ -231,6 +231,9 @@ def extractSex(line):
     # return "F" if int(sex) == 1 else "M"
     return 1 if float(line[10]) == 1 else 0
 
+def extractHealthED(line):
+	return int(line[205])
+
 def extractTimeWithMd(line):
 	global LABEL_BUCKET_SIZE
 
@@ -238,14 +241,38 @@ def extractTimeWithMd(line):
 	time = int(line[291:293])
 	return time - (time % LABEL_BUCKET_SIZE)
 
+def extractInjury(line):
+    return int(line[27:29])
+
+def extractMajor(line):
+    return int(line[52:54])
+
+def extractProbabilityDiagnosis1(line):
+   return int(line[69:71])
+
+def extractProbabilityDiagnosis2(line):
+   return int(line[71:73])
+
+def extractProbabilityDiagnosis3(line):
+   return int(line[73:75])
+
+def extractServices(line):
+    return int(line[115])
+
 def extractFeatures(line):
 	"""
 	Main feature extraction fn
 	"""
 	return [
-		extractDayOfWeek(line),
-		extractAge(line),
-		extractSex(line),
+		# extractDayOfWeek(line),
+		# extractAge(line),
+		# extractSex(line),
+		extractInjury(line),
+		extractMajor(line),  # important - brings down from 0.98 to 0.82
+		# extractProbabilityDiagnosis1(line),
+		# extractProbabilityDiagnosis2(line),  # raised error by 0.03
+		extractProbabilityDiagnosis3(line),
+		extractServices(line)
 	]
 
 def extractLabel(line):
