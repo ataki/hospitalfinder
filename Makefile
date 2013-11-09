@@ -8,7 +8,7 @@ TEST_YEAR = 2010
 
 .PHONY: test data
 
-field_histogram:
+hist:
 	@echo "${HR}"
 	@echo "Visualizes the field specified in tools/parser"
 	@echo "${HR}"
