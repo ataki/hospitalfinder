@@ -21,7 +21,7 @@ Usage
 
 Run these in the root project directory
 
-`make field_histogram` plots a histogram for single field values. 
+`make hist` plots a histogram for a single field. 
 
 `make <distribution>` creates a plot for the specified visualization.
 

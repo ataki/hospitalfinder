@@ -16,7 +16,7 @@ import sys
 from math import log, exp
 
 # Debugging: Controls how many lines reader reads in
-LIMIT = None
+LIMIT = 50
 
 # Number of buckets to divide dataset into for kfolding
 KFOLD_LEVEL = 10
@@ -111,11 +111,9 @@ class Model(object):
 		error = float(0)
 		for example, correctLabel in zip(testExamples, testCategories):
 			decision, likelihood = self.classify(example)
-			# print "Decision: ", decision, "   Correct: ", correctLabel
 			if decision != correctLabel:
-				error += float(1)
-			# else:
-			# 	print "Decision: ", decision, "   Correct: ", correctLabel
+				error += abs(float(correctLabel) - float(decision)) / float(correctLabel)
+				print "Decision: ", decision, "   Correct: ", correctLabel
 		return error / float(len(testCategories))
 	
 	def _getCrossValidationSimpleData(self):
@@ -168,7 +166,9 @@ class Model(object):
 		of that value in the given feature column.
 		Uses Laplace Smoothing
 		"""
-		return float(len(featureCol[featureCol == value]) + 1) / float(len(featureCol) + numDistinctFeatureValues)
+		occurrences = float(len(featureCol[featureCol == value]) + 1)
+		total = float(len(featureCol) + numDistinctFeatureValues)
+		return occurrences / total 
 
 	def _createFeatureMap(self, values, featureCol):
 		"""
@@ -239,7 +239,7 @@ def extractTimeWithMd(line):
 
 	# Extract field rounded down to nearest bucket size
 	time = int(line[291:293])
-	return time - (time % LABEL_BUCKET_SIZE)
+	return time - (time % LABEL_BUCKET_SIZE) + (LABEL_BUCKET_SIZE / 2)
 
 def extractInjury(line):
     return int(line[27:29])
@@ -262,17 +262,21 @@ def extractServices(line):
 def extractFeatures(line):
 	"""
 	Main feature extraction fn
+	Commented out featurea are ones that have been tried, but
+	don't contribute too much
 	"""
 	return [
 		# extractDayOfWeek(line),
 		# extractAge(line),
 		# extractSex(line),
-		extractInjury(line),
-		extractMajor(line),  # important - brings down from 0.98 to 0.82
 		# extractProbabilityDiagnosis1(line),
 		# extractProbabilityDiagnosis2(line),  # raised error by 0.03
-		extractProbabilityDiagnosis3(line),
-		extractServices(line)
+		# extractProbabilityDiagnosis3(line),
+		# extractServices(line)
+
+		# -- Features that work --
+		extractInjury(line),
+		extractMajor(line),
 	]
 
 def extractLabel(line):
@@ -287,9 +291,19 @@ def extractLabel(line):
 def main(argv):
 	if len(argv) < 3:
 		print "Usage: python naive_bayes.py <train_data> <test_data>"
+		sys.exit(1)
 
-	y, x = reader.read(argv[1], extractFeaturesFn=extractFeatures, extractLabelsFn=extractLabel, limit=LIMIT)
-	testY, testX = reader.read(argv[2], extractFeaturesFn=extractFeatures, extractLabelsFn=extractLabel, limit=LIMIT)
+	y, x = reader.read(argv[1], **{
+		'extractFeaturesFn': extractFeatures, 
+		'extractLabelsFn': extractLabel, 
+		'limit': LIMIT
+	})
+
+	testY, testX = reader.read(argv[2], **{
+		'extractFeaturesFn': extractFeatures, 
+		'extractLabelsFn': extractLabel, 
+		'limit': LIMIT
+	})
 
 	model = Model()
 	model.train(x, y)
@@ -297,17 +311,30 @@ def main(argv):
 	print "Error: %f" % error
 
 if __name__ == "__main__":
+	# ---
+	# Executes as main script
+
 	main(sys.argv)
 else:
+	# ---
+	# Executes on import
+
 	DEFAULT_TRAIN = './data/2009'
 	DEFAULT_TEST = './data/2010'
 	
-	y, x = reader.read(DEFAULT_TRAIN, extractFeaturesFn=extractFeatures, extractLabelsFn=extractLabel, limit=LIMIT)
+	y, x = reader.read(DEFAULT_TRAIN, **{
+		'extractFeaturesFn': extractFeatures, 
+		'extractLabelsFn': extractLabel, 
+		'limit': LIMIT
+	})
 
 	model = Model()
 	model.train(x, y)
 
-	ty, tx = reader.read(DEFAULT_TEST, extractFeaturesFn=extractFeatures, extractLabelsFn=extractLabel)
+	ty, tx = reader.read(DEFAULT_TEST, **{
+		'extractFeaturesFn': extractFeatures, 
+		'extractLabelsFn': extractLabel
+	})
 	model.test()
 
 
