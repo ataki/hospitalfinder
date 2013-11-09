@@ -4,6 +4,7 @@ END = \033[0m
 HR = \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
 
 YEAR = 2009
+TEST_YEAR = 2010
 
 .PHONY: test data
 
@@ -19,7 +20,7 @@ nbayes:
 	@echo "${HR}"
 	@echo "Naive Bayes Train on ${YEAR} Data"
 	@echo "${HR}"
-	@python naive_bayes.py data/${YEAR}
+	@python nbayes.py data/${YEAR} data/${TEST_YEAR}
 
 clean: 
 	@rm *.pyc
