@@ -1,4 +1,4 @@
-Welcome to our CS 229 Final Project Repo! 
+HospitalFinder: CS 229 Final Project
 ---
 
 Jim Zheng, Yannis Petousis, and Scott Cheng
@@ -15,10 +15,11 @@ Medical Care Survey, collected by the National Center for Health
 Statistics. This annual survey samples physician-paient interactions across
 the US. Sampling was done using a "multi-stage probability design". For more information, please consult pdfs/docs2010.pdf.
 
-Helpful commands
+
+Usage
 ---
 
-We use a Makefile to automate away some basic tasks.
+Run these in the root project directory
 
 `make field_histogram` plots a histogram for single field values. 
 
