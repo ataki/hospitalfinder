@@ -16,10 +16,13 @@ import sys
 from math import log, exp
 
 # Debugging: Controls how many lines reader reads in
-LIMIT = 50
+LIMIT = 1000
 
 # Number of buckets to divide dataset into for kfolding
 KFOLD_LEVEL = 10
+
+# Divide labels into buckets to get more consistent data
+LABEL_BUCKET_SIZE = 10
 
 # ---------------------------------------------------------
 # Model
@@ -108,8 +111,11 @@ class Model(object):
 		error = float(0)
 		for example, correctLabel in zip(testExamples, testCategories):
 			decision, likelihood = self.classify(example)
+			print "Decision: ", decision, "   Correct: ", correctLabel
 			if decision != correctLabel:
 				error += float(1)
+			# else:
+			# 	print "Decision: ", decision, "   Correct: ", correctLabel
 		return error / float(len(testCategories))
 	
 	def _getCrossValidationSimpleData(self):
@@ -196,7 +202,7 @@ class Model(object):
 
 	def _calculateLikelihood(self, example, label):
 		"""
-		Given a training vector (example) and a classified
+		Given a training vector (example) and a classified 
 		"""
 		# Takes exp(sum(logs(probabilities)))
 		log_likelihood = float(0)
@@ -208,7 +214,6 @@ class Model(object):
 				prob = mapping[value]
 			except KeyError:
 				prob = float(1) / float(len(mapping.keys()))
-			# can we ignore 0 values here?
 			assert(prob != 0)
 			log_likelihood += log(prob)
 		return exp(log_likelihood)
@@ -217,19 +222,26 @@ class Model(object):
 # Extraction
 
 def extractDayOfWeek(line):
-    return int(line[6])
+    return float(line[6])
 
 def extractAge(line):
-    return int(line[7:10])
+    return float(line[7:10])
 
 def extractSex(line):
     # return "F" if int(sex) == 1 else "M"
-    return 1 if int(line[10]) == 1 else 0
+    return 1 if float(line[10]) == 1 else 0
 
 def extractTimeWithMd(line):
-    return int(line[291:293])
+	global LABEL_BUCKET_SIZE
+
+	# Extract field rounded down to nearest bucket size
+	time = int(line[291:293])
+	return time - (time % LABEL_BUCKET_SIZE)
 
 def extractFeatures(line):
+	"""
+	Main feature extraction fn
+	"""
 	return [
 		extractDayOfWeek(line),
 		extractAge(line),
@@ -237,6 +249,9 @@ def extractFeatures(line):
 	]
 
 def extractLabel(line):
+	"""
+	Main label extraction fn
+	"""
 	return extractTimeWithMd(line)
 
 # ---------------------------------------------------------
