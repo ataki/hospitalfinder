@@ -18,9 +18,15 @@ hist:
 
 nbayes:
 	@echo "${HR}"
-	@echo "Naive Bayes Train on ${YEAR} Data"
+	@echo "Naive Bayes Train on ${YEAR} Data, Test on ${TEST_YEAR} Data"
 	@echo "${HR}"
 	@python nbayes.py data/${YEAR} data/${TEST_YEAR}
+
+kmeans:
+	@echo "${HR}"
+	@echo "Kmeans Train on ${YEAR} Data, Test on ${TEST_YEAR} Data"
+	@echo "${HR}"
+	@python kmeans.py data/${YEAR} data/${TEST_YEAR}
 
 clean: 
 	@rm *.pyc
