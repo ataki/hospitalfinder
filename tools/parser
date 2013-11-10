@@ -16,7 +16,7 @@ import sys
 import os
 
 # Modify this to fit your own custom function naem
-FIELD_EXTRACTOR_NAME = 'extractTimeWithMd'
+FIELD_EXTRACTOR_NAME = 'extractInjuryType1'
 
 # The CSV file this will output data to
 # outfile = open(os.path.join(os.getcwd(), 'data', '2010.csv'), 'w')
@@ -51,6 +51,9 @@ def extractDatetime(line):
 def extractDayOfWeek(line):
     return line[6]
 
+def extractPayType(line):
+    return line[15:23]
+
 def extractAge(line):
     return line[7:10]
 
@@ -70,6 +73,15 @@ def extractProbabilityDiagnosis1(line):
 
 def extractServices(line):
     return int(line[115])
+
+def extractPhysicianType(line):
+    return int(line[305:309])
+
+def extractPatientType(line):
+    return line[319:325].rstrip()
+
+def extractInjuryType1(line):
+    return int(line[1064])
 
 def extractEthnicity(line):
     code = int(line[11:13])
