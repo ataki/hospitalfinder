@@ -3,6 +3,7 @@ Sample code to get started reading in data in kmeans
 """
 import sys
 from utils import reader
+import numpy as np
 
 # Limit on the number of lines read in by reader
 LIMIT = 100
@@ -26,11 +27,20 @@ class Model():
 # ---------------------------------------------------------
 # Extraction
 
+def extractSex(line):
+	return int(line[8:10])
+
+def extractPrescription(line):
+	return int(line[400:401])
+
 def extractFeatures(line):
-	return line[8:10]
+	return [
+		extractSex(line),
+		extractPrescrption(line)
+	]
 
 def extractLabel(line):
-	return line[9:11]
+	return int(line[9:11])
 
 # ---------------------------------------------------------
 # Main
@@ -45,6 +55,9 @@ def main(argv):
 
 	model = Model()
 	model.train(x, y)
+
+	print x[3,0]
+	
 
 if __name__ == "__main__":
 	main(sys.argv)
