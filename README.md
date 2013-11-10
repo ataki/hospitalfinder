@@ -34,18 +34,15 @@ Run these in the root project directory
 `make hist` plots a histogram for a single field. 
 
 `make <algo_name>` outputs our tuned algorithms' results training with 2009 and testing with 2010 dataset
+(e.g. `make nbayes`)
 
 Methods Used 
 ---
 
-- [x] Naive Bayes
-- [-] Linear Regression
-- [-] SVMs
-- [-] KMeans
-
-e.g.
-
-to view our Naive Bayes 
+- [ x ] Naive Bayes
+- [ - ] Linear Regression
+- [ - ] SVMs
+- [ - ] KMeans
 
 Contributing
 ---
