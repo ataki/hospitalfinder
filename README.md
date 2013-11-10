@@ -15,7 +15,7 @@ the US. Sampling was done using a "multi-stage probability design". For more inf
 
 We train on historical data (1993-2009) and test using 2010 data. 
 
-We use the scipy stack []
+We use the scipy stack [http://www.scipy.org/stackspec.html]
 
 We store our main implementations within scripts at the top level directory.
 
@@ -35,12 +35,13 @@ Run these in the root project directory
 
 `make <algo_name>` outputs our tuned algorithms' results training with 2009 and testing with 2010 dataset
 
-Available algos (+ means implemented)
+Methods Used 
+---
 
 - [x] Naive Bayes
 - [-] Linear Regression
 - [-] SVMs
-- [-] Kmeans
+- [-] KMeans
 
 e.g.
 
