@@ -37,7 +37,7 @@ def extractLabel(line):
 
 def main(argv):
 	if len(argv) < 3:
-		print "Usage: python naive_bayes.py <train_data> <test_data>"
+		print "Usage: python kmeans.py <train_data> <test_data>"
 		sys.exit(1)
 
 	y, x = reader.read(argv[1], extractFeaturesFn=extractFeatures, extractLabelsFn=extractLabel, limit=LIMIT)
