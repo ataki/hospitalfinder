@@ -10,7 +10,7 @@ import numpy
 import sys
 
 def plot_count(fp):
-	data = [int(l) for l in fp]
+	data = [l for l in fp]
 
 	counts = {}
 	for point in data:
@@ -20,19 +20,25 @@ def plot_count(fp):
 			counts[point] = 1
 	
 	print "Number of distinct points: ", len(counts.keys())	
-	print "Mean", numpy.mean(data)
-	print "Median", numpy.median(data)
-	print "Max", numpy.max(data)
-	print "Min", numpy.min(data)
-	print "Standard deviation: ", numpy.std(data)
+	if type(data[0]) == "int":
+		print "Mean", numpy.mean(data)
+		print "Median", numpy.median(data)
+		print "Max", numpy.max(data)
+		print "Min", numpy.min(data)
+		print "Standard deviation: ", numpy.std(data)
 
 	print "    Field    :    Count  			   "
 	print "----------------------------------------"
-	for k, v in counts.items():
-		print "   %d    :     %d    " % (k, v) 
-
-	plt.hist(data, 10)
-	plt.show()
+	if type(data[0]) == "int":
+		for k, v in counts.items():
+			print "   %d    :     %d    " % (k, v) 
+	else:
+		for k, v in counts.items():
+			print "   %s    :     %d    " % (k.rstrip(), v) 			
+	
+	if type(data[0]) == "int":
+		plt.hist(data, 10)
+		plt.show()
 
 def main(argv):
 	if len(argv) < 2:
