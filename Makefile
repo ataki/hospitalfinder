@@ -14,7 +14,7 @@ hist:
 	@echo "${HR}"
 	@python tools/parser data/${YEAR}
 	@echo "${GREEN}Data parsed; constructing histogram ${END}"
-	@python tools/field_visualizer data/${YEAR}.csv
+	@python tools/histogram data/${YEAR}.csv
 
 nbayes:
 	@echo "${HR}"
