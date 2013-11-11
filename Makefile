@@ -10,11 +10,11 @@ TEST_YEAR = 2010
 
 hist:
 	@echo "${HR}"
-	@echo "Visualizes the field specified in tools/parser"
+	@echo "Visualizes the field specified in tools/parser for dataset ${TEST_YEAR}"
 	@echo "${HR}"
-	@python tools/parser data/${YEAR}
+	@python tools/parser data/${TEST_YEAR}
 	@echo "${GREEN}Data parsed; constructing histogram ${END}"
-	@python tools/histogram data/${YEAR}.csv
+	@python tools/histogram data/${TEST_YEAR}.csv
 
 nbayes:
 	@echo "${HR}"
