@@ -1,4 +1,4 @@
-mapping = {
+features = {
 	"dayOfWeek": (6, 7, int),
 	"age": (7, 10, int),
 	"sex": (10, 11, int),

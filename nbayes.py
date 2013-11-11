@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """
 Milestone 1:
 
@@ -7,7 +5,7 @@ Implements Naive Bayes Classifier for hospital data.
 Useful functions for obtaining CV.
 """
 
-from utils import reader
+from utils import reader, mappings, extractor
 # import matplotlib.pyplot as plt
 import numpy as np
 # import time
@@ -16,13 +14,21 @@ import sys
 from math import log, exp
 
 # Debugging: Controls how many lines reader reads in
-LIMIT = 50
+LIMIT = 500
 
 # Number of buckets to divide dataset into for kfolding
 KFOLD_LEVEL = 10
 
 # Divide labels into buckets to get more consistent data
 LABEL_BUCKET_SIZE = 10
+
+# Define current list of features being considered. 
+# Names must match a key in utils.mappings
+FEATURES = [
+	"injury",
+	"majorReason",
+	""
+]
 
 # ---------------------------------------------------------
 # Model
@@ -106,15 +112,23 @@ class Model(object):
 
 	def predict(self, testExamples, testCategories):
 		"""
-		Returns a 3-tuple of (error, bias, variance)
+		Returns an int representing the error in predictions.
+		Calculate error by averaging predictions i.e. treat the prediction
+		as a continuous variable and find the delta in predictions. 
+		Specifically, we define the error in classifying example i to be 
+		abs(diff(correct(i), decision(i))) / max(correct(i), decision(i)).
+		This accounts for the correct being very small, and error > 1.
+		Thus, we treat an "overprediction" the same way as an "underprediction"
+		with predicted and actual decisions swapped.
 		"""
-		error = float(0)
+		errors = []
 		for example, correctLabel in zip(testExamples, testCategories):
 			decision, likelihood = self.classify(example)
 			if decision != correctLabel:
-				error += abs(float(correctLabel) - float(decision)) / float(correctLabel)
+				error = abs(float(correctLabel) - float(decision)) / max(float(correctLabel), float(decision))
+				errors.append(error)
 				print "Decision: ", decision, "   Correct: ", correctLabel
-		return error / float(len(testCategories))
+		return np.average(errors)
 	
 	def _getCrossValidationSimpleData(self):
 		permutation = np.random.permutation(self.aggregateRows)
@@ -221,63 +235,20 @@ class Model(object):
 # ---------------------------------------------------------
 # Extraction
 
-def extractDayOfWeek(line):
-    return float(line[6])
-
-def extractAge(line):
-    return float(line[7:10])
-
-def extractSex(line):
-    # return "F" if int(sex) == 1 else "M"
-    return 1 if float(line[10]) == 1 else 0
-
-def extractHealthED(line):
-	return int(line[205])
-
 def extractTimeWithMd(line):
 	global LABEL_BUCKET_SIZE
-
 	# Extract field rounded down to nearest bucket size
 	time = int(line[291:293])
-	return time - (time % LABEL_BUCKET_SIZE) + (LABEL_BUCKET_SIZE / 2)
-
-def extractInjury(line):
-    return int(line[27:29])
-
-def extractMajor(line):
-    return int(line[52:54])
-
-def extractProbabilityDiagnosis1(line):
-   return int(line[69:71])
-
-def extractProbabilityDiagnosis2(line):
-   return int(line[71:73])
-
-def extractProbabilityDiagnosis3(line):
-   return int(line[73:75])
-
-def extractServices(line):
-    return int(line[115])
+	return time - (time % LABEL_BUCKET_SIZE)
 
 def extractFeatures(line):
 	"""
 	Main feature extraction fn
-	Commented out featurea are ones that have been tried, but
+	Commented out features are ones that have been tried, but
 	don't contribute too much
 	"""
-	return [
-		# extractDayOfWeek(line),
-		# extractAge(line),
-		# extractSex(line),
-		# extractProbabilityDiagnosis1(line),
-		# extractProbabilityDiagnosis2(line),  # raised error by 0.03
-		# extractProbabilityDiagnosis3(line),
-		# extractServices(line)
-
-		# -- Features that work --
-		extractInjury(line),
-		extractMajor(line),
-	]
+	global FEATURES
+	return [extractor.extract(line, mappings.features[feature]) for feature in FEATURES]
 
 def extractLabel(line):
 	"""

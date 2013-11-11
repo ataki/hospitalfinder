@@ -28,6 +28,12 @@ kmeans:
 	@echo "${HR}"
 	@python kmeans.py data/${YEAR} data/${TEST_YEAR}
 
+svm:
+	@echo "${HR}"
+	@echo "SVM train on ${YEAR} Data, Test on ${TEST_YEAR} Data"
+	@echo "${HR}"
+	@python svm.py data/${YEAR} Data, Test on ${TEST_YEAR} Data"
+
 clean: 
 	@rm *.pyc
 	@echo "Done"
