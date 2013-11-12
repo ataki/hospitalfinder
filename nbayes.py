@@ -2,33 +2,27 @@
 Milestone 1:
 
 Implements Naive Bayes Classifier for hospital data.
-Useful functions for obtaining CV.
+Exports a Model class useful for training data sets.
+
+We use discretized NB via binning to get optimal
+performance (see Hsu, C., H. Huang, and T. Wong. 2000. 
+Why Discretization Works for Naive Bayesian Classifiers).
 """
 
 from utils import reader, mappings, extractor
-# import matplotlib.pyplot as plt
-import numpy as np
-# import time
-# import datetime
 import sys
-from math import log, exp
+import copy
+import numpy as np
+from math import log, exp, floor
 
 # Debugging: Controls how many lines reader reads in
-LIMIT = 500
+LIMIT = None
 
 # Number of buckets to divide dataset into for kfolding
 KFOLD_LEVEL = 10
 
 # Divide labels into buckets to get more consistent data
 LABEL_BUCKET_SIZE = 10
-
-# Define current list of features being considered. 
-# Names must match a key in utils.mappings
-FEATURES = [
-	"injury",
-	"majorReason",
-	""
-]
 
 # ---------------------------------------------------------
 # Model
@@ -80,14 +74,36 @@ class Model(object):
 		prediction = None
 		for label in self.yUnique:
 			likelihood = self._calculateLikelihood(example, label)
-			if likelihood > max_likelihood:
+			if likelihood >= max_likelihood:
 				max_likelihood = likelihood
 				prediction = label
 		return (prediction, max_likelihood)
 
+	def predict(self, testExamples, testCategories):
+		"""
+		Returns an int representing the error in predictions.
+		Calculate error by averaging predictions i.e. treat the 
+		prediction as a linear regression problem and calculate
+		squares error
+		"""
+		global LABEL_BUCKET_SIZE
+		
+		sum = 0
+		maxDiff = max(testCategories)
+
+		for example, correctLabel in zip(testExamples, testCategories):
+			decision, likelihood = self.classify(example)
+			if decision != correctLabel:
+				error = abs(float(correctLabel) - float(decision)) / maxDiff
+				sum += pow(error, 2)
+				# print "Decision: ", decision, "   Correct: ", correctLabel
+		return sum / len(testCategories)
+
 	def crossValidate(self, method):
 		"""
-		Cross-validates single model and returns error
+		Returns the estimated generalization error based on cross
+		validation.
+
 		Method: the cross validation scheme to use (kfold|simple)
 		Raises NotImplementedError if the method is not valid
 
@@ -104,64 +120,15 @@ class Model(object):
 
 		if method == 'simple':
 			trainX, trainY, testX, testY = self._getCrossValidationSimpleData()
+			self.train(trainX, trainY)
+			return self.predict(testX, testY)
+
 		elif method == 'kfold':
 			permutation = np.random.permutation(self.aggregateRows)
 			return np.average([self._getCrossValidationForBucket(i, permutation) for i in range(0, KFOLD_LEVEL)])
+		
 		else:
 			raise NotImplementedError
-
-	def predict(self, testExamples, testCategories):
-		"""
-		Returns an int representing the error in predictions.
-		Calculate error by averaging predictions i.e. treat the prediction
-		as a continuous variable and find the delta in predictions. 
-		Specifically, we define the error in classifying example i to be 
-		abs(diff(correct(i), decision(i))) / max(correct(i), decision(i)).
-		This accounts for the correct being very small, and error > 1.
-		Thus, we treat an "overprediction" the same way as an "underprediction"
-		with predicted and actual decisions swapped.
-		"""
-		errors = []
-		for example, correctLabel in zip(testExamples, testCategories):
-			decision, likelihood = self.classify(example)
-			if decision != correctLabel:
-				error = abs(float(correctLabel) - float(decision)) / max(float(correctLabel), float(decision))
-				errors.append(error)
-				print "Decision: ", decision, "   Correct: ", correctLabel
-		return np.average(errors)
-	
-	def _getCrossValidationSimpleData(self):
-		permutation = np.random.permutation(self.aggregateRows)
-		stop = int(len(permutation) * 0.7)
-		trainRows = permutation[0:stop]
-		testRows = permutation[stop:]
-
-		trainX = np.delete(trainRows, -1, 1)
-		trainY = trainRows[:, 1]
-		testX = np.delete(testRows, -1, 1)
-		testY = testRows[:, 1]
-
-		return (trainX, trainY, testX, testY)
-
-	def _getCrossValidationForBucket(self, ith, permutation):
-		trainX, trainY, testX, testY = self._getCrossValidationKFoldData(ith, permutation)
-		self.train(trainX, trainY)
-		return self.predict(testX, testY)
-
-	def _getCrossValidationKFoldData(self, ith, permutation):
-		global KFOLD_LEVEL
-
-		bstart = ith * permutation
-		bend = (ith + 1) * permutation
-
-		trainRows = np.hstack([permutation[0:bstart], permutation[bend, len(permutation)]])
-		testRows = permutation[bstart, bend]
-
-		trainX = np.delete(trainRows, -1, 1)
-		trainY = trainRows[:, 1]
-		testX = np.delete(testRows, -1, 1)
-		testY = testRows[:, 1]
-		return (trainX, trainY, testX, testY)
 
 	def _countCategories(self):
 		"""
@@ -232,29 +199,118 @@ class Model(object):
 			log_likelihood += log(prob)
 		return exp(log_likelihood)
 
+	def _getCrossValidationSimpleData(self):
+		permutation = np.random.permutation(self.aggregateRows)
+		stop = int(len(permutation) * 0.7)
+		trainRows = permutation[0:stop]
+		testRows = permutation[stop:]
+		trainX = np.delete(trainRows, -1, axis=1)
+		trainY = trainRows[:, 1]
+		testX = np.delete(testRows, -1, 1)
+		testY = testRows[:, 1]
+
+		return (trainX, trainY, testX, testY)
+
+	def _getCrossValidationForBucket(self, ith, permutation):
+		trainX, trainY, testX, testY = self._getCrossValidationKFoldData(ith, permutation)
+		self.train(trainX, trainY)
+		return self.predict(testX, testY)
+
+	def _getCrossValidationKFoldData(self, ith, permutation):
+		global KFOLD_LEVEL
+
+		bstart = ith * permutation
+		bend = (ith + 1) * permutation
+
+		trainRows = np.hstack([permutation[0:bstart], permutation[bend, len(permutation)]])
+		testRows = permutation[bstart, bend]
+
+		trainX = np.delete(trainRows, -1, 1)
+		trainY = trainRows[:, 1]
+		testX = np.delete(testRows, -1, 1)
+		testY = testRows[:, 1]
+		return (trainX, trainY, testX, testY)
+
 # ---------------------------------------------------------
 # Extraction
 
-def extractTimeWithMd(line):
+def findNearestBucket(val):
+	# Assign correct bucket for categories
 	global LABEL_BUCKET_SIZE
+	return val - (val % LABEL_BUCKET_SIZE)
+
+def extractTimeWithMd(line):
 	# Extract field rounded down to nearest bucket size
 	time = int(line[291:293])
-	return time - (time % LABEL_BUCKET_SIZE)
+	return findNearestBucket(time)
 
-def extractFeatures(line):
+def extractFeatures2010(line):
 	"""
-	Main feature extraction fn
-	Commented out features are ones that have been tried, but
-	don't contribute too much
+	Extract features based on specs from 2010
 	"""
-	global FEATURES
-	return [extractor.extract(line, mappings.features[feature]) for feature in FEATURES]
+	return [extractor.extract(line, spec) for _, spec in mappings.features["2010"]]
+
+def extractFeatures2009(line):
+	"""
+	Extract features based on specs from 2009
+	"""
+	return [extractor.extract(line, spec) for _, spec in mappings.features["2009"]]
 
 def extractLabel(line):
 	"""
-	Main label extraction fn
+	Main label extraction fn.
 	"""
 	return extractTimeWithMd(line)
+
+# ---------------------------------------------------------
+# Feature Selection
+
+def featureSelect(method, data, threshold):
+	"""
+	Returns array of features based on a heuristic.
+	Each entry of the array corresponds to the ith feature
+	column of data.
+	
+	`method` technique to use (forward|backward)
+	`data` tuple (y, x) of input data
+	`threshold` desired length of featureSet
+	"""
+	y, x = data
+	features = range(0, x.shape[1])
+	model = Model()
+
+	if method == "forward":
+		featureSet = []
+		while len(featureSet) != threshold:
+			bestFeature = None
+			minError = 1
+			for i in features:
+				model.train(np.take(x, featureSet + [i], axis=1), y)
+				cvError = model.crossValidate('simple')
+				if minError > cvError:
+					minError = cvError
+					bestFeature = i
+			featureSet.append(bestFeature)
+			features.remove(i)
+
+	elif method == "backward":
+		featureSet = copy.deepcopy(features)
+		while len(featureSet) > threshold:
+			worstFeature = None
+			maxError = 1
+			for i in features:
+				model.train(np.take(x, [j for j in features if i != j], axis=1), y)
+				cvError = model.crossValidate('simple')
+				if maxError < cvError:
+					maxError = cvError
+					worstFeature = i
+			featureSet.remove(worstFeature)
+			features.remove(i)
+	
+	else:
+		raise NotImplementedError
+
+	return featureSet
 
 # ---------------------------------------------------------
 # Main
@@ -264,22 +320,32 @@ def main(argv):
 		print "Usage: python naive_bayes.py <train_data> <test_data>"
 		sys.exit(1)
 
+	# Train on 2009 format
 	y, x = reader.read(argv[1], **{
-		'extractFeaturesFn': extractFeatures, 
+		'extractFeaturesFn': extractFeatures2009, 
 		'extractLabelsFn': extractLabel, 
 		'limit': LIMIT
 	})
 
+	# Test on 2010 format
 	testY, testX = reader.read(argv[2], **{
-		'extractFeaturesFn': extractFeatures, 
+		'extractFeaturesFn': extractFeatures2010, 
 		'extractLabelsFn': extractLabel, 
 		'limit': LIMIT
 	})
 
+	# Test Basic Predict
 	model = Model()
 	model.train(x, y)
 	error = model.predict(testX, testY)
 	print "Error: %f" % error
+
+	# Feature Selection
+	# fwdf = featureSelect('forward', (y, x), 10)
+	# print fwdf
+
+	# bkf = featureSelect('backward', (y, x), 10)
+	# print bkf
 
 if __name__ == "__main__":
 	# ---
@@ -288,24 +354,20 @@ if __name__ == "__main__":
 	main(sys.argv)
 else:
 	# ---
-	# Executes on import
+	# Execute inside ipython
 
 	DEFAULT_TRAIN = './data/2009'
 	DEFAULT_TEST = './data/2010'
 	
 	y, x = reader.read(DEFAULT_TRAIN, **{
-		'extractFeaturesFn': extractFeatures, 
+		'extractFeaturesFn': extractFeatures2009, 
 		'extractLabelsFn': extractLabel, 
 		'limit': LIMIT
 	})
 
-	model = Model()
-	model.train(x, y)
-
-	ty, tx = reader.read(DEFAULT_TEST, **{
-		'extractFeaturesFn': extractFeatures, 
-		'extractLabelsFn': extractLabel
+	testY, testX = reader.read(DEFAULT_TEST, **{
+		'extractFeaturesFn': extractFeatures2010, 
+		'extractLabelsFn': extractLabel, 
+		'limit': floor(LIMIT / 4)
 	})
-	model.test()
-
 

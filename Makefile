@@ -18,7 +18,7 @@ hist:
 
 nbayes:
 	@echo "${HR}"
-	@echo "Naive Bayes Train on ${YEAR} Data, Test on ${TEST_YEAR} Data"
+	@echo "Naive Bayes: Train on ${YEAR}, Test on ${TEST_YEAR}"
 	@echo "${HR}"
 	@python nbayes.py data/${YEAR} data/${TEST_YEAR}
 

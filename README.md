@@ -33,7 +33,7 @@ Run these in the root project directory
 
 `make hist` plots a histogram for a single field. 
 
-`make <algo_name>` outputs our tuned algorithms' results training with 2009 and testing with 2010 dataset
+`make <algo_name>` outputs our tuned algorithms' results training with 2009 and testing with 2010 dataset. This is very useful for testing.
 (e.g. `make nbayes`)
 
 Methods Used 
@@ -43,6 +43,7 @@ Methods Used
 - [ - ] Linear Regression
 - [ - ] SVMs
 - [ - ] KMeans
+- [ - ] Feature Selection
 
 Contributing
 ---
