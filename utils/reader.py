@@ -23,28 +23,6 @@ Usage:
 import sys
 from numpy import array
 
-# --------------------------------------------------------
-# Sample. Used as dummy defaults. 
-
-def extractAge(line):
-    return line[7:10]
-
-def extractSex(line):
-    sex = line[10]
-    return "F" if int(sex) == 1 else "M"
-
-def extractTimeWithMd(line):
-    return int(line[291:293])
-
-def extractFeatures(line):
-    return [
-        extractAge(line),
-        extractSex(line),
-    ]
-
-def extractLabel(line):
-    return extractTimeWithMd(line)
-
 # -----------------------------------------------
 # Main Exports
 
@@ -69,7 +47,7 @@ def read(filename, extractFeaturesFn=None, extractLabelsFn=None, limit=None):
     counter = 0
     with open(filename, 'r') as f:
         for line in f:
-            if limit != None and counter > limit:
+            if limit != None and counter >= limit:
                 break
             else:
                 x.append(extractFeaturesFn(line))
