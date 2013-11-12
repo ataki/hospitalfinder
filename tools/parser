@@ -28,75 +28,9 @@ DELIM = ","
 # --------------------------------------------
 # Helpers
 
-MONTHS = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06',\
-                'Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
-
-def transformMonth(mon):
-    if mon in MONTHS:
-        return MONTHS[mon] 
-    else:
-        return mon
-
-def transformDttm(month, year):
-    return str(year) + "-" + str(month) + "-" + "15 00:00:00"
-
-# ------------------------------------------
-# Extractors
-
-def extractDatetime(line):
-    month = line[0:2]
-    year = line[2:6]
-    return transformDttm(month, year)
-
-def extractDayOfWeek(line):
-    return line[6]
-
-def extractPayType(line):
-    return line[15:23]
-
-def extractAge(line):
-    return line[7:10]
-
-def extractSex(line):
-    sex = line[10]
-    # return "F" if int(sex) == 1 else "M"
-    return int(sex)
-
-def extractInjury(line):
-    return int(line[27:29])
-
-def extractMajor(line):
-    return int(line[52:54])
-
-def extractProbabilityDiagnosis1(line):
-    return int(line[73:75])
-
-def extractServices(line):
-    return int(line[115])
-
-def extractPhysicianType(line):
-    return int(line[305:309])
-
-def extractPatientType(line):
-    return line[319:325].rstrip()
-
-def extractInjuryType1(line):
-    return int(line[1064])
-
-def extractEthnicity(line):
-    code = int(line[11:13])
-    if code == -9:
-        return "NULL"
-    elif code == 1:
-        return "Hisp/L"
-    elif code == 2:
-        return "Nonhisp/L"
-
-def extractTimeWithMd(line):
-    return int(line[291:293])
-
 def myExtractFn(line):
-    return line[851:853]
+    val = float(line[99:105])
+    return (val if val > 0 else 0)
 
 # ------------------------------------------------
 # Main Execution 

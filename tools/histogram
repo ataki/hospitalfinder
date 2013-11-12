@@ -10,7 +10,7 @@ import numpy
 import sys
 
 def plot_count(fp):
-	data = [l for l in fp]
+	data = [float(l) for l in fp]
 
 	counts = {}
 	for point in data:
@@ -20,29 +20,32 @@ def plot_count(fp):
 			counts[point] = 1
 	
 	print "Number of distinct points: ", len(counts.keys())	
-	if type(data[0]) == "int":
+	if type(data[0]) == int or type(data[0]) == float:
 		print "Mean", numpy.mean(data)
 		print "Median", numpy.median(data)
 		print "Max", numpy.max(data)
 		print "Min", numpy.min(data)
 		print "Standard deviation: ", numpy.std(data)
-
-	print "    Field    :    Count  			   "
-	print "----------------------------------------"
-	if type(data[0]) == "int":
+	
+	if type(data[0]) == int:
+		print "    Field    :    Count  			   "
+		print "----------------------------------------"
 		for k, v in counts.items():
 			print "   %d    :     %d    " % (k, v) 
-	else:
+
+	elif type(data[0]) == str:
+		print "    Field    :    Count  			   "
+		print "----------------------------------------"
 		for k, v in counts.items():
 			print "   %s    :     %d    " % (k.rstrip(), v) 			
 	
-	if type(data[0]) == "int":
-		plt.hist(data, 10)
+	if type(data[0]) == int or type(data[0]) == float:
+		plt.hist(data, 12)
 		plt.show()
 
 def main(argv):
 	if len(argv) < 2:
-		print "Usage: field_visualizer <csv_name>"
+		print "Usage: histogram <csv_name>"
 
 	print "Visualizes a single field's distribution via histogram over a given dataset."
 
