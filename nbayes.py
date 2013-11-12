@@ -16,7 +16,7 @@ import numpy as np
 from math import log, exp, floor
 
 # Debugging: Controls how many lines reader reads in
-LIMIT = None
+LIMIT = 50
 
 # Number of buckets to divide dataset into for kfolding
 KFOLD_LEVEL = 10
@@ -43,8 +43,11 @@ class Model(object):
 	def train(self, x, y):
 		self.x = x
 		self.y = y
-		self.aggregateRows = np.append(self.x, self.y)
 		self.numExamples = len(self.y)
+
+		# helps with cross-validation.
+		# aggregateRows is X with Y col tacked on
+		self.aggregateRows = np.hstack( (self.x, self.y.reshape(-1,1)) )
 
 		# Array of arrays of distinct values.
 		# Each entry corresponds to a feature
@@ -94,10 +97,12 @@ class Model(object):
 		for example, correctLabel in zip(testExamples, testCategories):
 			decision, likelihood = self.classify(example)
 			if decision != correctLabel:
-				error = abs(float(correctLabel) - float(decision)) / maxDiff
-				sum += pow(error, 2)
-				# print "Decision: ", decision, "   Correct: ", correctLabel
-		return sum / len(testCategories)
+				if type(correctLabel) == int or type(correctLabel) == float:
+					error = abs(float(correctLabel) - float(decision)) / maxDiff
+					sum += pow(error, 2)
+				else:
+					sum += 1
+		return float(sum) / float(len(testCategories))
 
 	def crossValidate(self, method):
 		"""
@@ -200,6 +205,10 @@ class Model(object):
 		return exp(log_likelihood)
 
 	def _getCrossValidationSimpleData(self):
+		"""
+		Simple CV splits dataset into 70% / 30%.
+		It then trains on 70% and tests with 30%
+		"""
 		permutation = np.random.permutation(self.aggregateRows)
 		stop = int(len(permutation) * 0.7)
 		trainRows = permutation[0:stop]
@@ -208,7 +217,6 @@ class Model(object):
 		trainY = trainRows[:, 1]
 		testX = np.delete(testRows, -1, 1)
 		testY = testRows[:, 1]
-
 		return (trainX, trainY, testX, testY)
 
 	def _getCrossValidationForBucket(self, ith, permutation):
@@ -222,7 +230,7 @@ class Model(object):
 		bstart = ith * permutation
 		bend = (ith + 1) * permutation
 
-		trainRows = np.hstack([permutation[0:bstart], permutation[bend, len(permutation)]])
+		trainRows = np.hstack( (permutation[0:bstart], permutation[bend:len(permutation)]) ) 
 		testRows = permutation[bstart, bend]
 
 		trainX = np.delete(trainRows, -1, 1)
@@ -267,50 +275,52 @@ def extractLabel(line):
 
 def featureSelect(method, data, threshold):
 	"""
-	Returns array of features based on a heuristic.
-	Each entry of the array corresponds to the ith feature
-	column of data.
+	Returns tuple of (bestFeatures, bestError).
+	
+	bestFeature is an array of indices corresponding
+	to columns in the data; it tells you which set of
+	columns make for the best featuref
+	bestError is the CV error corresponding to running
+	simple cross validation on bestFeatures
 	
 	`method` technique to use (forward|backward)
 	`data` tuple (y, x) of input data
 	`threshold` desired length of featureSet
 	"""
 	y, x = data
-	features = range(0, x.shape[1])
+	features = range(0, x.shape[1])  # set of features for inner for loop
 	model = Model()
 
 	if method == "forward":
 		featureSet = []
 		while len(featureSet) != threshold:
 			bestFeature = None
-			minError = 1
+			error = 1
 			for i in features:
 				model.train(np.take(x, featureSet + [i], axis=1), y)
 				cvError = model.crossValidate('simple')
-				if minError > cvError:
-					minError = cvError
+				if error > cvError:
+					error = cvError
 					bestFeature = i
 			featureSet.append(bestFeature)
-			features.remove(i)
+			features.remove(bestFeature)
 
 	elif method == "backward":
 		featureSet = copy.deepcopy(features)
 		while len(featureSet) > threshold:
-			worstFeature = None
-			maxError = 1
-			for i in features:
-				model.train(np.take(x, [j for j in features if i != j], axis=1), y)
+			worstFeature = 0 # by default, remove first feature if all else is equal
+			error = 0
+			for i in featureSet:
+				model.train(np.take(x, [j for j in featureSet if i != j], axis=1), y)
 				cvError = model.crossValidate('simple')
-				if maxError < cvError:
-					maxError = cvError
+				if error < cvError:
+					error = cvError
 					worstFeature = i
 			featureSet.remove(worstFeature)
-			features.remove(i)
-	
 	else:
 		raise NotImplementedError
 
-	return featureSet
+	return (featureSet, error)
 
 # ---------------------------------------------------------
 # Main
@@ -335,17 +345,15 @@ def main(argv):
 	})
 
 	# Test Basic Predict
-	model = Model()
-	model.train(x, y)
-	error = model.predict(testX, testY)
-	print "Error: %f" % error
+	# model = Model()
+	# model.train(x, y)
+	# error = model.predict(testX, testY)
+	# print "Error: %f" % error
 
 	# Feature Selection
-	# fwdf = featureSelect('forward', (y, x), 10)
-	# print fwdf
 
-	# bkf = featureSelect('backward', (y, x), 10)
-	# print bkf
+	print "forward search: ", featureSelect('forward', (y, x), 10)
+	print "backward search: ", featureSelect('backward', (y, x), 10)
 
 if __name__ == "__main__":
 	# ---
