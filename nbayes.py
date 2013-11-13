@@ -16,7 +16,7 @@ import numpy as np
 from math import log, exp, floor
 
 # Debugging: Controls how many lines reader reads in
-LIMIT = 50
+LIMIT = 1000
 
 # Number of buckets to divide dataset into for kfolding
 KFOLD_LEVEL = 10
@@ -39,18 +39,22 @@ class Model(object):
 		self.yUnique = None
 		self.pFeatures = None
 		self.pLabels = None
+		self.__cv__ = False  # has cross-validation been called?
 
 	def train(self, x, y):
+		self.__cv__ = False
+
 		self.x = x
 		self.y = y
 		self.numExamples = len(self.y)
 
 		# helps with cross-validation.
-		# aggregateRows is X with Y col tacked on
+		# aggregateRows is X with Y col tacked on at the end
 		self.aggregateRows = np.hstack( (self.x, self.y.reshape(-1,1)) )
 
 		# Array of arrays of distinct values.
-		# Each entry corresponds to a feature
+		# For the ith feature, the ith entry in this array
+		# corresponds to the unique values for that feature
 		self.featureValues = [np.unique(col) for col in self.x.T]
 
 		# categories: array
@@ -62,8 +66,10 @@ class Model(object):
 		self.pLabels = [float(count) / float(self.numExamples) for count in self.pCount]
 
 		# p_features: map of arrays
+		# each key is a value Y can take on
 		# each value is an array of featureMaps
 		# each featureMap gives a mapping of {featureValue: probabilityOfOccurence}
+		# the ith featureMap corresponds to the ith feature
 		self.pFeatures = {}
 		for cat in self.yUnique:
 			self.pFeatures[cat] = self._countFeaturesForCategory(cat)
@@ -91,18 +97,19 @@ class Model(object):
 		"""
 		global LABEL_BUCKET_SIZE
 		
-		sum = 0
-		maxDiff = max(testCategories)
-
+		sum = float(0)
 		for example, correctLabel in zip(testExamples, testCategories):
 			decision, likelihood = self.classify(example)
 			if decision != correctLabel:
-				if type(correctLabel) == int or type(correctLabel) == float:
-					error = abs(float(correctLabel) - float(decision)) / maxDiff
-					sum += pow(error, 2)
+				if type(correctLabel) == int:
+					sum += abs(float(correctLabel) - float(decision))
+				elif type(correctLabel) == float:
+					sum += abs(correctLabel - float(decision))
 				else:
-					sum += 1
-		return float(sum) / float(len(testCategories))
+					sum += float(1)
+		if int(sum) == 0:
+			sys.exit(1)
+		return float(sum)
 
 	def crossValidate(self, method):
 		"""
@@ -112,10 +119,20 @@ class Model(object):
 		Method: the cross validation scheme to use (kfold|simple)
 		Raises NotImplementedError if the method is not valid
 
+		Note: This method is not idempotent; calling it twice
+		will disrupt the state of class variables, because we
+		call self.train() passing in parts of the current dataset.
+		Thus, we assert on a private var to make sure you don't call 
+		this twice without first training on a new dataset.
+
 		Usage
 		model.crossValidate('simple')
 		model.crossValidate('k-fold')
 		"""
+		# if True, it means we'll have called this twice
+		assert(self.__cv__ == False)
+		self.__cv__ = True
+		
 		global KFOLD_LEVEL
 
 		trainX = None
@@ -158,7 +175,8 @@ class Model(object):
 
 	def _createFeatureMap(self, values, featureCol):
 		"""
-		Given a distinct set of feature values, returns a map where
+		Given a distinct set of feature values, and the 
+		sample columns to look at, returns a map where
 		each k-v pair map is the probability that the 
 		given feature takes on that value.
 		"""
@@ -171,14 +189,11 @@ class Model(object):
 	def _countFeaturesForCategory(self, label):
 		"""
 		Returns [ { featureMap1 }, { featureMap2 }, ... ]
-		where each entry maps a featureValue to 
-		its probability of occurring
+		where the ith entry corresponds to the ith featureValue. 
+		Each featureMap maps {'value': probability_occurrence}
 		"""
-		indices = np.where(self.y == label)
-		examples = self.x[indices]
-		# Iterate over the ith feature column
-		# For each feature, returns a map of the feature to the 
-		# probability of that feature occurring.
+		examples = self.x[np.where(self.y == label)]
+
 		featureMaps = []
 		for i in range(0, len(self.featureValues)):
 			values = self.featureValues[i]
@@ -214,9 +229,9 @@ class Model(object):
 		trainRows = permutation[0:stop]
 		testRows = permutation[stop:]
 		trainX = np.delete(trainRows, -1, axis=1)
-		trainY = trainRows[:, 1]
-		testX = np.delete(testRows, -1, 1)
-		testY = testRows[:, 1]
+		trainY = trainRows[:, -1]
+		testX = np.delete(testRows, -1, axis=1)
+		testY = testRows[:, -1]
 		return (trainX, trainY, testX, testY)
 
 	def _getCrossValidationForBucket(self, ith, permutation):
@@ -295,7 +310,7 @@ def featureSelect(method, data, threshold):
 		featureSet = []
 		while len(featureSet) != threshold:
 			bestFeature = None
-			error = 1
+			error = float('inf')
 			for i in features:
 				model.train(np.take(x, featureSet + [i], axis=1), y)
 				cvError = model.crossValidate('simple')
@@ -309,18 +324,18 @@ def featureSelect(method, data, threshold):
 		featureSet = copy.deepcopy(features)
 		while len(featureSet) > threshold:
 			worstFeature = 0 # by default, remove first feature if all else is equal
-			error = 0
+			error = float('inf')
 			for i in featureSet:
 				model.train(np.take(x, [j for j in featureSet if i != j], axis=1), y)
 				cvError = model.crossValidate('simple')
-				if error < cvError:
+				if error > cvError:
 					error = cvError
 					worstFeature = i
 			featureSet.remove(worstFeature)
 	else:
 		raise NotImplementedError
 
-	return (featureSet, error)
+	return (sorted(featureSet), error)
 
 # ---------------------------------------------------------
 # Main
@@ -344,16 +359,9 @@ def main(argv):
 		'limit': LIMIT
 	})
 
-	# Test Basic Predict
-	# model = Model()
-	# model.train(x, y)
-	# error = model.predict(testX, testY)
-	# print "Error: %f" % error
-
 	# Feature Selection
-
 	print "forward search: ", featureSelect('forward', (y, x), 10)
-	print "backward search: ", featureSelect('backward', (y, x), 10)
+	# print "backward search: ", featureSelect('backward', (y, x), 10)
 
 if __name__ == "__main__":
 	# ---
@@ -378,4 +386,9 @@ else:
 		'extractLabelsFn': extractLabel, 
 		'limit': floor(LIMIT / 4)
 	})
+
+	model = Model()
+	model.train(x, y)
+	error = model.predict(testX, testY)
+	print "Error: %f" % error
 
