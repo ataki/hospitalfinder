@@ -41,6 +41,11 @@ class Model(object):
 		self.pLabels = None
 		self.__cv__ = False  # has cross-validation been called?
 
+	def assign(self, x, y):
+		self.x = x
+		self.y = y
+		self.aggregateRows = np.hstack( (self.x, self.y.reshape(-1,1)) )		
+
 	def train(self, x, y):
 		self.__cv__ = False
 
@@ -50,7 +55,7 @@ class Model(object):
 
 		# helps with cross-validation.
 		# aggregateRows is X with Y col tacked on at the end
-		self.aggregateRows = np.hstack( (self.x, self.y.reshape(-1,1)) )
+		# self.aggregateRows = np.hstack( (self.x, self.y.reshape(-1,1)) )
 
 		# Array of arrays of distinct values.
 		# For the ith feature, the ith entry in this array
@@ -107,10 +112,9 @@ class Model(object):
 					sum += abs(correctLabel - float(decision))
 				else:
 					sum += float(1)
-		if int(sum) == 0:
-			sys.exit(1)
 		return float(sum)
 
+	@profile
 	def crossValidate(self, method):
 		"""
 		Returns the estimated generalization error based on cross
@@ -287,7 +291,7 @@ def extractLabel(line):
 
 # ---------------------------------------------------------
 # Feature Selection
-
+@profile
 def featureSelect(method, data, threshold):
 	"""
 	Returns tuple of (bestFeatures, bestError).
@@ -312,7 +316,7 @@ def featureSelect(method, data, threshold):
 			bestFeature = None
 			error = float('inf')
 			for i in features:
-				model.train(np.take(x, featureSet + [i], axis=1), y)
+				model.assign(np.take(x, featureSet + [i], axis=1), y)
 				cvError = model.crossValidate('simple')
 				if error > cvError:
 					error = cvError
