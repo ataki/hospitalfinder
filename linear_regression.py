@@ -11,22 +11,14 @@ LIMIT = 100
 
 class LinearRegressionModel(object):
 
-	def __init__(self):
-		self.X = None
-		self.Y = None
-		self.theta = None
-
-	def train(self, X, Y):
-		"""
-		Train unweighted linear regression model using a set of training
-		features X and corresponding targer values Y
-		"""
+	def __init__(self, X, Y):
 		# Add intercept term to X
 		self.X = np.column_stack((np.ones((X.shape[0], 1)), X))
 		self.Y = Y
+		self.theta = None
 
-		# Calcualte unweighted theta using normal equation
-		self.theta = np.dot(np.dot(np.linalg.inv(np.dot(X.T, X)), X.T), Y)
+	def train(self, X, Y):
+		pass
 
 	def h(self, x, weighted=True, tau=1):
 		"""
@@ -34,10 +26,6 @@ class LinearRegressionModel(object):
 		current model
 		tau is bandwidth parameter for weighted predictions
 		"""
-		if self.theta == None:
-			raise Exception(
-				"Linear regression model cannot make predictions before trained")
-
 		# Add intercept term to x
 		x = np.append([1], x)
 
@@ -56,6 +44,10 @@ class LinearRegressionModel(object):
 
 			return np.dot(theta, x)
 		else:
+			if self.theta == None:
+				# Calcualte unweighted theta using normal equation
+				self.theta = np.dot(np.dot(
+					np.linalg.inv(np.dot(self.X.T, self.X)), self.X.T), self.Y)
 			return np.dot(self.theta, x)
 
 
@@ -83,8 +75,7 @@ def main(argv):
 		'limit': LIMIT
 	})
 
-	model = LinearRegressionModel()
-	model.train(X, Y)
+	model = LinearRegressionModel(X, Y)
 
 	# Predict using age and sex
 	print model.h(np.array([7, 1]))
