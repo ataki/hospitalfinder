@@ -29,7 +29,7 @@ DELIM = ","
 # Helpers
 
 def myExtractFn(line):
-    val = float(line[99:105])
+    val = float(line[836:838])
     return (val if val > 0 else 0)
 
 # ------------------------------------------------

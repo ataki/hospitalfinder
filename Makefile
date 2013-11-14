@@ -12,11 +12,11 @@ PROFILE_TARGET = nbayes.py
 
 hist:
 	@echo "${HR}"
-	@echo "Visualizes the field specified in tools/parser for dataset ${TEST_YEAR}"
+	@echo "Visualizes the field specified in tools/parser for dataset ${YEAR}"
 	@echo "${HR}"
-	@python tools/parser data/${TEST_YEAR}
+	@python tools/parser data/${YEAR}
 	@echo "${GREEN}Data parsed; constructing histogram ${END}"
-	@python tools/histogram data/${TEST_YEAR}.csv
+	@python tools/histogram data/${YEAR}.csv
 
 nbayes:
 	@echo "${HR}"
