@@ -1,4 +1,9 @@
 # 2010 Data Mapping
+target = {
+	"2010": ("timeWithMD", (291, 293, int)),
+	"2009": ("timeWithMD", (291, 293, int))
+}
+
 features = {
 
 	# ------
