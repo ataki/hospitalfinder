@@ -6,6 +6,8 @@ HR = ------------------------------------------
 YEAR = 2009
 TEST_YEAR = 2010
 
+PROFILE_TARGET = nbayes.py
+
 .PHONY: test data
 
 hist:
@@ -33,6 +35,9 @@ svm:
 	@echo "SVM train on ${YEAR} Data, Test on ${TEST_YEAR} Data"
 	@echo "${HR}"
 	@python svm.py data/${YEAR} Data, Test on ${TEST_YEAR} Data"
+
+profile:
+	@./tools/kernprof -l -v ${PROFILE_TARGET} data/2009 data/2010 > ${PROFILE_TARGET}.perf
 
 clean: 
 	@rm *.pyc

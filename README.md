@@ -26,6 +26,17 @@ The following is our folder structure:
 - Importable libraries in `/utils`
 - Data documentation in `/pdfs`
 
+Installation
+---
+
+Requirements: Python 2.7+ , pip, brew (on Mac OSX)
+
+Have the requirements? Then
+
+	pip install -r requirements.txt
+
+Requirements.txt has all packages for ML libraries, visualizations, web framework, and profiler.
+
 Usage
 ---
 
