@@ -22,7 +22,6 @@ class Model():
 	def train(self, x, y):
 		self.x = x
 		self.y = y
-		#self.centroids = 
 
 		# process data here
 		
@@ -31,7 +30,6 @@ class Model():
 	def test(self, tx, ty):
 		self.tx = tx
 		self.ty = ty
-		#self.features = 
 
 		# process data here
 
@@ -70,9 +68,6 @@ class Model():
 
 		self.trained = True
 
-		print convergence
-		print iteration
-
 
 	def distanceToCentroids(self, x):
 		assert self.trained
@@ -86,7 +81,6 @@ class Model():
 			distances = np.maximum(distances,0)
 			ii = ii + 1
 
-		print distances
 		return distances
 
 
@@ -224,10 +218,7 @@ def main(argv):
 	model = Model()
 	model.train(x, y)
 	model.runKmeans(x)
-	model.distanceToCentroids(x)
-
-	print x
-	print x.shape
+	distances = model.distanceToCentroids(x)
 	
 
 if __name__ == "__main__":
