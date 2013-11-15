@@ -36,9 +36,9 @@ svm:
 	@echo "${HR}"
 	@python svm.py data/${YEAR} Data, Test on ${TEST_YEAR} Data"
 
-linear_reg:
+linreg:
 	@echo "${HR}"
-	@python linear_regression.py data/2010
+	@python linreg.py data/2010
 
 profile:
 	@./tools/kernprof -l -v ${PROFILE_TARGET} data/2009 data/2010 > ${PROFILE_TARGET}.perf
