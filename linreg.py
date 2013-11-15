@@ -6,9 +6,10 @@ from utils import reader, mappings, extractor
 import sys
 import numpy as np
 from utils.cv import crossValidate
+from utils.fsel import forwardSearch
 
 # Debugging: Controls how many lines reader reads in
-LIMIT = 500
+LIMIT = 1000
 
 class LinearRegressionModel(object):
 
@@ -18,12 +19,20 @@ class LinearRegressionModel(object):
 			# Add intercept term to X
 			self.X = np.hstack((np.ones((self.X.shape[0], 1)), self.X))
 		self.Y = Y
-		self.theta = None
+		self._calcUnweightedTheta()
+
+	def _calcUnweightedTheta(self):
+		"""
+		Calcualte unweighted theta using normal equation
+		"""
+		self.theta = np.dot(np.dot(
+			np.linalg.inv(np.dot(self.X.T, self.X)), self.X.T), self.Y)
 
 	def train(self, X, Y):
 		# Add intercept term to X
 		self.X = np.hstack((np.ones((X.shape[0], 1)), X))
 		self.Y = Y
+		self._calcUnweightedTheta()
 
 	def h(self, x, weighted=True, tau=1):
 		"""
@@ -48,14 +57,11 @@ class LinearRegressionModel(object):
 				self.X.T), W), self.Y)
 
 			return np.dot(theta, x)
+
 		else:
-			if self.theta == None:
-				# Calcualte unweighted theta using normal equation
-				self.theta = np.dot(np.dot(
-					np.linalg.inv(np.dot(self.X.T, self.X)), self.X.T), self.Y)
 			return np.dot(self.theta, x)
 
-	def predict(self, X, Y, weighted=True, tau=1):
+	def predict(self, X, Y, weighted=True, tau=5):
 		"""
 		Make predictions based on X and compare to Y.
 		Return the average error.
@@ -92,7 +98,10 @@ def main(argv):
 	model = LinearRegressionModel(X, Y)
 
 	# Run cross validation
-	print crossValidate(model, X, Y, method='kfold', weighted=True, tau=5)
+	# print crossValidate(model, X, Y, cvMethod='kfold', weighted=True, tau=5)
+
+	# Run forward search
+	print forwardSearch(model, X, Y, cvMethod='kfold')
 
 if __name__ == '__main__':
 	main(sys.argv)

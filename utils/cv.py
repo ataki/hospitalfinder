@@ -1,17 +1,17 @@
-import numpy as np
-
 """
 Cross validator
 
 Usage:
 
 	from cv import crossValidate
-	error = crossValidate(ml_model, X, Y, method='simple'|'kfold', **options)
-	# options will be passed to ml_model.predict method.
+	error = crossValidate(mlModel, X, Y, cvMethod='simple'|'kfold', **options)
+	# options is passed to mlModel.predict.
 
 """
 
-def crossValidate(model, X, Y, method='simple', kfold_level=10, **options):
+import numpy as np
+
+def crossValidate(model, X, Y, cvMethod='simple', kfold_level=10, **options):
 	"""
 	Run cross validation on a model using training samples X, Y
 	Pass options parameter to model.predict method.
@@ -20,12 +20,12 @@ def crossValidate(model, X, Y, method='simple', kfold_level=10, **options):
 	X = np.random.permutation(X)
 	Y = np.random.permutation(Y)
 
-	if method == 'simple':
+	if cvMethod == 'simple':
 		trainX, trainY, testX, testY = _getSimpleCVData(X, Y)
 		model.train(trainX, trainY)
 		return model.predict(testX, testY, **options)
 
-	elif method == 'kfold':
+	elif cvMethod == 'kfold':
 		error = 0
 		for i in range(kfold_level):
 			trainX, trainY, testX, testY = _getKFoldCVData(X, Y, i, kfold_level)
