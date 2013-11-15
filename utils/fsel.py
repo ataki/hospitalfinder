@@ -9,19 +9,20 @@ Usage:
 
 """
 
+import copy
 import numpy as np
 
 from cv import crossValidate
 
-def forwardSearch(model, X, Y, threshold=0.01, **options):
+def forwardSearch(model, X, Y, threshold=0.0001, **options):
 	"""
 	Run forward search on data samples X, Y using given model.
 	Algorithm terminates when test error does not decrease after adding
 	new features.
 
-	Returns tuple of (bestFeatures, bestError).
-	bestFeature is an array of indices of features.
-	bestError is the cross validation error using bestFeatures
+	Returns tuple of (features, testError).
+	features is an array of indices of selected features.
+	testError is the cross validation error using selected features.
 
 	threshold describes the termination condition, when the test error does
 	not fall by threshold after adding a feature to model.
@@ -40,21 +41,37 @@ def forwardSearch(model, X, Y, threshold=0.01, **options):
 			break
 
 		for f in features:
-			currentError = crossValidate(
-				model, np.take(X, bestFeatures + [f], axis=1), Y, **options)
+			# print "Looking at feature %d" % f
+			try:
+				filteredX = np.array(
+					[x for x in np.take(X, bestFeatures + [f], axis=1)
+					if all([i > -7 for i in x])])
+				currentError = crossValidate(
+					model, filteredX, Y, **options)
+			except Exception:
+				# If exception happens, skip this feature
+				# print 'Catched Exception'
+				continue
+			# print "Feature %d yields error %f, best error so far is %f" % \
+			# 	(f, currentError, bestError), model.theta
 			if currentError < bestError:
 				bestError = currentError
 				bestFeature = f
+				trainingError = model.trainingError()
+				# print 'Better feature: ', f
 
-		if lastError != None and (lastError - bestError) / lastError < threshold:
+		if lastError != None and \
+			(lastError == 0 or (lastError - bestError) / lastError < threshold):
 			break
 
 		lastError = bestError
+		lastTrainingError = trainingError
 		bestFeatures.append(bestFeature)
 		features.remove(bestFeature)
+		# print "Added feature %d" % bestFeature
 
-	return (bestFeatures, lastError)
+	return (bestFeatures, lastError, lastTrainingError)
 
-def backwardSearch(model, X, Y, threshold=0.01, **options):
+def backwardSearch(model, X, Y, threshold=0.0001, **options):
 	# TODO
 	pass

@@ -26,7 +26,7 @@ def crossValidate(model, X, Y, cvMethod='simple', kfold_level=10, **options):
 		return model.predict(testX, testY, **options)
 
 	elif cvMethod == 'kfold':
-		error = 0
+		error = float(0)
 		for i in range(kfold_level):
 			trainX, trainY, testX, testY = _getKFoldCVData(X, Y, i, kfold_level)
 			model.train(trainX, trainY)

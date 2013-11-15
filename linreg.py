@@ -9,7 +9,7 @@ from utils.cv import crossValidate
 from utils.fsel import forwardSearch
 
 # Debugging: Controls how many lines reader reads in
-LIMIT = 1000
+LIMIT = 30
 
 class LinearRegressionModel(object):
 
@@ -19,7 +19,8 @@ class LinearRegressionModel(object):
 			# Add intercept term to X
 			self.X = np.hstack((np.ones((self.X.shape[0], 1)), self.X))
 		self.Y = Y
-		self._calcUnweightedTheta()
+		if self.X != None and self.Y != None:
+			self._calcUnweightedTheta()
 
 	def _calcUnweightedTheta(self):
 		"""
@@ -48,8 +49,8 @@ class LinearRegressionModel(object):
 			m, k = self.X.shape
 			W = np.zeros((m, m))
 			for i in range(m):
-				diff = self.X[i, :] - x
-				W[i][i] = np.exp(- np.dot(diff, diff) / (2 * np.square(tau)))
+				diff = self.X[i] - x
+				W[i][i] = np.exp(0 - np.dot(diff, diff) / (2 * np.square(tau)))
 
 			# Calculate weighted theta using normal equation
 			theta = np.dot(np.dot(np.dot(
@@ -61,24 +62,31 @@ class LinearRegressionModel(object):
 		else:
 			return np.dot(self.theta, x)
 
-	def predict(self, X, Y, weighted=True, tau=5):
+	def predict(self, X, Y, weighted=False, tau=3):
 		"""
 		Make predictions based on X and compare to Y.
 		Return the average error.
 		"""
-		error = 0
+		error = float(0)
 		for x, y in zip(X, Y):
 			error += abs(self.h(x, weighted=weighted, tau=tau) - y)
 		return error / len(Y)
+
+	def trainingError(self, weighted=False, tau=3):
+		"""
+		Calculate average training error of hypothesis.
+		"""
+		return self.predict(self.X[:, 1:], self.Y, weighted=weighted, tau=tau)
+
+featureCandidates = [(name, spec)
+	for name, spec in mappings.features['2010']
+	if spec[2] == int or spec[2] == float or spec[2] == bool]
 
 def extractFeatures2010(line):
 	"""
 	Extract features based on specs from 2010
 	"""
-	selectedFeatures = ["age", "sex"] # TODO: use feature selection algorithm
-	return [extractor.extract(line, spec)
-		for name, spec in mappings.features['2010']
-		if name in selectedFeatures]
+	return [extractor.extract(line, spec) for (name, spec) in featureCandidates]
 
 def extractTarget(line):
 	# Extract field rounded down to nearest bucket size
@@ -95,13 +103,39 @@ def main(argv):
 		'limit': LIMIT
 	})
 
-	model = LinearRegressionModel(X, Y)
+	model = LinearRegressionModel()
 
 	# Run cross validation
 	# print crossValidate(model, X, Y, cvMethod='kfold', weighted=True, tau=5)
 
+	# Train on one feature at a time
+	# for f in range(X.shape[1]):
+	# 	xx = np.take(X, [f], axis=1)
+	# 	xx = np.array([x for x in xx if all([i > -7 for i in x])])
+	# 	try:
+	# 		model = LinearRegressionModel()
+	# 		e = crossValidate(model, xx, Y, weighted=False)
+	# 		print featureCandidates[f][0], model.theta, e
+	# 	except Exception:
+	# 		print 'Exception'
+	# 		continue
+
 	# Run forward search
-	print forwardSearch(model, X, Y, cvMethod='kfold')
+	# features, testError, trainingError = forwardSearch(model, X, Y, cvMethod='simple', weighted=False)
+	# print len(featureCandidates), features
+	# print [featureCandidates[i][0] for i in features]
+	# print testError
+
+
+	# Error-m relation
+	ms = [30, 300, 3000, 30000]
+	result = []
+	for m in ms:
+		_, testError, trainingError = forwardSearch(model, X[:m], Y[:m], cvMethod='simple')
+		result.append((m, testError, trainingError))
+		print m, testError, trainingError
+	print result
+
 
 if __name__ == '__main__':
 	main(sys.argv)
