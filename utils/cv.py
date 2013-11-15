@@ -17,8 +17,9 @@ def crossValidate(model, X, Y, cvMethod='simple', kfold_level=10, **options):
 	Pass options parameter to model.predict method.
 	"""
 	# Randomly permutate data
-	X = np.random.permutation(X)
-	Y = np.random.permutation(Y)
+	permutated = np.random.permutation(np.hstack((X, Y.reshape(-1, 1))))
+	X = permutated[:, :-1]
+	Y = permutated[:, -1]
 
 	if cvMethod == 'simple':
 		trainX, trainY, testX, testY = _getSimpleCVData(X, Y)
