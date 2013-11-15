@@ -5,20 +5,25 @@ Weighted and unweighted linear regression
 from utils import reader, mappings, extractor
 import sys
 import numpy as np
+from cv import crossValidate
 
 # Debugging: Controls how many lines reader reads in
-LIMIT = 100
+LIMIT = 500
 
 class LinearRegressionModel(object):
 
-	def __init__(self, X, Y):
-		# Add intercept term to X
-		self.X = np.column_stack((np.ones((X.shape[0], 1)), X))
+	def __init__(self, X=None, Y=None):
+		self.X = X
+		if self.X != None:
+			# Add intercept term to X
+			self.X = np.hstack((np.ones((self.X.shape[0], 1)), self.X))
 		self.Y = Y
 		self.theta = None
 
 	def train(self, X, Y):
-		pass
+		# Add intercept term to X
+		self.X = np.hstack((np.ones((X.shape[0], 1)), X))
+		self.Y = Y
 
 	def h(self, x, weighted=True, tau=1):
 		"""
@@ -50,6 +55,15 @@ class LinearRegressionModel(object):
 					np.linalg.inv(np.dot(self.X.T, self.X)), self.X.T), self.Y)
 			return np.dot(self.theta, x)
 
+	def predict(self, X, Y, weighted=True, tau=1):
+		"""
+		Make predictions based on X and compare to Y.
+		Return the average error.
+		"""
+		error = 0
+		for x, y in zip(X, Y):
+			error += abs(self.h(x, weighted=weighted, tau=tau) - y)
+		return error / len(Y)
 
 def extractFeatures2010(line):
 	"""
@@ -77,8 +91,8 @@ def main(argv):
 
 	model = LinearRegressionModel(X, Y)
 
-	# Predict using age and sex
-	print model.h(np.array([7, 1]))
+	# Run cross validation
+	print crossValidate(model, X, Y, method='kfold', weighted=True, tau=5)
 
 if __name__ == '__main__':
 	main(sys.argv)
