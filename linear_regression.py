@@ -5,7 +5,7 @@ Weighted and unweighted linear regression
 from utils import reader, mappings, extractor
 import sys
 import numpy as np
-from cv import crossValidate
+from utils.cv import crossValidate
 
 # Debugging: Controls how many lines reader reads in
 LIMIT = 500
