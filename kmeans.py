@@ -6,7 +6,7 @@ from utils import reader
 import numpy as np
 
 # Limit on the number of lines read in by reader
-LIMIT = 100
+LIMIT = None#1000
 
 # ---------------------------------------------------------
 # Model
@@ -14,7 +14,7 @@ LIMIT = 100
 class Model():
 	def __init__(self):
 		# Initialization here
-		self.k = 3
+		self.k = 6
 		self.MAXITER = 50
 		self.trained = False
 		pass
@@ -77,8 +77,8 @@ class Model():
 		ii = 0
 		for example in range(x.shape[1]):
 			euclidean = np.sqrt(((x[:, example].reshape(x.shape[0], 1) - self.centroids)**2).sum(axis=0))
-			distances[(ii*self.k):((ii+1)*self.k)] = euclidean.sum() / self.k - euclidean
-			distances = np.maximum(distances,0)
+			distances[(ii*self.k):((ii+1)*self.k)] = euclidean.sum() / self.k - euclidean # Set distances greater than average as negative
+			distances = np.maximum(distances,0) # Set negative distances to zero. Note examples close to centroid have a high "distance" value 
 			ii = ii + 1
 
 		return distances
@@ -214,6 +214,9 @@ def main(argv):
 
 	y, x = reader.read(argv[1], extractFeaturesFn=extractFeatures, extractLabelsFn=extractLabel, limit=LIMIT)
 	# testY, testX = reader.read(argv[2], extractFeaturesFn=extractFeatures, extractLabelsFn=extractLabel, limit=LIMIT)
+
+	print np.shape(x)
+	print np.shape(y)
 
 	model = Model()
 	model.train(x, y)
