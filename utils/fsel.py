@@ -43,11 +43,11 @@ def forwardSearch(model, X, Y, threshold=0.0001, **options):
 		for f in features:
 			# print "Looking at feature %d" % f
 			try:
-				filteredX = np.array(
-					[x for x in np.take(X, bestFeatures + [f], axis=1)
-					if all([i > -7 for i in x])])
+				filteredXY = np.array(
+					[xy for xy in np.hstack((np.take(X, bestFeatures + [f], axis=1), Y.reshape(-1, 1)))
+					if all([i > -7 for i in xy])])
 				currentError = crossValidate(
-					model, filteredX, Y, **options)
+					model, filteredXY[:, :-1], filteredXY[:, -1], **options)
 			except Exception:
 				# If exception happens, skip this feature
 				# print 'Catched Exception'
