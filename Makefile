@@ -44,5 +44,5 @@ profile:
 	@./tools/kernprof -l -v ${PROFILE_TARGET} data/2009 data/2010 > ${PROFILE_TARGET}.perf
 
 clean: 
-	@rm *.pyc
+	@rm ./*.pyc
 	@echo "Done"
