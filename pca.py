@@ -13,21 +13,27 @@ class Model():
 
 
 	def pca(self, x):
-		self.x = np.float_(x.T)
-		NoOfExamples = self.x.shape[1]
-		NoOfFeatures = self.x.shape[0]
+		x = np.float(x.T)
+		NoOfExamples = x.shape[1]
+		NoOfFeatures = x.shape[0]
 
 		S = np.zeros([NoOfFeatures, NoOfFeatures])
 		for example in range(NoOfExamples):
-			S += np.dot(x[:, example], x[:, example].T)
+			x[:, example] = x[:, example] - np.average(x[:, example]) # normalize data
+			sigma = np.sqrt(np.average(np.power(x[:, example], 2))) # normalize data
+			x[:, example] = x[:, example] / sigma # normalize data
 
-		S = S / NoOfFeatures
+			S += np.dot(x[:, example], x[:, example].T) # build S matrix
 
-		evalues, evectors = eigh(self.x, eigvals=(NoOfFeatures-self.k,NoOfFeatures-1))
+		S = S / NoOfFeatures # finish building S matrix
+
+		evalues, evectors = eigh(x, eigvals=(NoOfFeatures-self.k,NoOfFeatures-1)) # find the k top eigenvectors
+
+		xReduced = np.dot(evectors.T, x) # calculate the input features in the low dimensional space
 
 		self.pca = True
 
-		return evectors
+		return xReduced # Return features in low dimensionsal space. Number of rows is k and number of columns is the number of examples
 
 
 def main(argv):
