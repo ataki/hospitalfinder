@@ -14,8 +14,12 @@ from sklearn.cluster import KMeans
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.decomposition import PCA
 from sklearn.cross_decomposition import CCA
+<<<<<<< HEAD
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
+=======
+from sklearn.ensemble import GradientBoostingClassifier
+>>>>>>> 8ebbcb1bf4d9696148172fc680a69e936e0c487d
 from sklearn.feature_selection import SelectPercentile, f_classif
 import matplotlib.pyplot as plt
 
