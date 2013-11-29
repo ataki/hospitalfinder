@@ -1,0 +1,4 @@
+FeatureValue   |   Average TimeWithMD
+       0      |       20.5717226296      
+       1      |       20.6200774553      
+       2      |       20.5621052632      
