@@ -1,0 +1,167 @@
+"""
+Milestone 1:
+
+Implements Naive Bayes Classifier for hospital data.
+Exports a Model class useful for training data sets.
+
+We use discretized NB via binning to get optimal
+performance (see Hsu, C., H. Huang, and T. Wong. 2000. 
+Why Discretization Works for Naive Bayesian Classifiers).
+"""
+
+from utils import reader, mappings, extractor
+import sys
+import numpy as np
+from sklearn.naive_bayes import MultinomialNB
+
+# ---------------------------------------------------------
+# Adjustable parameters
+
+# Debugging: Controls how many lines reader reads in
+LIMIT = None
+
+# Number of buckets to divide dataset into for kfolding
+KFOLD_LEVEL = 10
+
+# Divide labels into buckets to get more consistent data
+LABEL_BUCKET_SIZE = 10
+
+# ---------------------------------------------------------
+# Multinomial Naive Bayes
+
+class Model(object):
+
+	def __init__(self):
+		self.X = None
+		self.Y = None
+		self.CLF = MultinomialNB()
+
+	def assign(self, X, Y):
+		self.X = X
+		self.Y = Y
+
+	def train(self, X, Y):
+		if not self.verify(X, Y): raise Exception("X and Y shape do not match")
+		self.X = X
+		self.Y = Y
+		self.CLF.fit(self.X, self.Y)
+
+	def verify(self, X, Y):
+		m, n = X.shape
+		_m = Y.shape[0]
+		if m != _m: return False
+		return True
+
+	def predict(self, X):
+		return self.CLF.predict(X)
+
+	def score(self, X, Y):
+		return self.CLF.score(X, Y)
+
+# --------------------------------------------------------
+
+def crossValidate(method, data, targets):
+	"""
+	method = "simple"|"kfold"
+
+	Returns error rate
+	"""
+	global KFOLD_LEVEL
+	
+	model = Model()
+	permutation = np.random.permutation(np.hstack((data, targets.reshape(-1,1))))
+	X = permutation[:, :-1]
+	Y = permutation[:, -1]
+
+	if method == 'simple':
+		s = 0.7 * permutation.shape[0]
+		model.train(X[s:], Y[s:])
+		return model.score(X[:s], Y[:s])
+	elif method == "kfold'":	
+		folds = np.linspace(0, permutation.shape[0], KFOLD_LEVEL).tolist()
+		results = []
+		fsz = permutation.shape[0] / KFOLD_LEVEL
+		for f in folds:
+			rng = range(f, f + fsz)
+			model.train(np.delete(X, rng), np.delete(Y, rng))
+			_, error = model.predict(X[rng], Y[rng])
+			results.append(error)
+		return np.average(results)
+	else: 
+		raise NotImplementedError
+
+# ---------------------------------------------------------
+# Extraction
+
+def roundBinaryFeature(val):
+	return 1 if val >= 0 else 0
+
+def findNearestBucket(val):
+	global LABEL_BUCKET_SIZE
+	return val - (val % LABEL_BUCKET_SIZE)
+
+def extractTimeWithMd(line):
+	time = int(line[291:293])
+	return findNearestBucket(time)
+
+def extractFeatures2010(line):
+	"""
+	Extract features based on specs from 2010
+	"""
+	return [extractor.extract(line, spec) for _, spec in mappings.features["2010"]]
+
+def extractFeatures2009(line):
+	"""
+	Extract features based on specs from 2009
+	"""
+	return [extractor.extract(line, spec) for _, spec in mappings.features["2009"]]
+
+def extractLabel(line):
+	"""
+	Main label extraction fn.
+	"""
+	return extractTimeWithMd(line)
+
+# ---------------------------------------------------------
+# Main
+
+def main(argv):
+	if len(argv) < 3:
+		print "Usage: python naive_bayes.py <train_data> <test_data>"
+		sys.exit(1)
+
+	y, X = reader.read(argv[1], **{
+		'extractFeaturesFn': extractFeatures2009, 
+		'extractLabelsFn': extractLabel, 
+		'limit': LIMIT
+	})
+
+	# testY, testX = reader.read(argv[2], **{
+	# 	'extractFeaturesFn': extractFeatures2010, 
+	# 	'extractLabelsFn': extractLabel, 
+	# 	'limit': LIMIT
+	# })
+
+	model = Model()
+	model.train(X, y)
+	print "Score: ", model.score(X, y)
+
+if __name__ == "__main__":
+	main(sys.argv)
+else:
+	y, X = reader.read("./data/2009", **{
+		'extractFeaturesFn': extractFeatures2009, 
+		'extractLabelsFn': extractLabel, 
+		'limit': LIMIT
+	})
+	testY, testX = reader.read("./data/2010", **{
+		'extractFeaturesFn': extractFeatures2010, 
+		'extractLabelsFn': extractLabel, 
+		'limit': LIMIT
+	})
+
+	model = Model()
+	model.train(X, y)
+
+	# collect results
+	[]

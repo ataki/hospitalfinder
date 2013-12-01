@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy
 import sys
 
-def plot_count(fp):
+def plot_count(fp, plot_name):
 	data = [float(l) for l in fp]
 
 	counts = {}
@@ -40,7 +40,8 @@ def plot_count(fp):
 			print "   %s    :     %d    " % (k.rstrip(), v) 			
 	
 	if type(data[0]) == int or type(data[0]) == float:
-		plt.hist(data, 12)
+		plt.hist(data, 10)
+		plt.title(plot_name)
 		plt.show()
 
 def main(argv):
@@ -50,7 +51,7 @@ def main(argv):
 	print "Visualizes a single field's distribution via histogram over a given dataset."
 
 	fp = open(argv[1], 'r')
-	plot_count(fp)
+	plot_count(fp, argv[1])
 	fp.close()
 
 if __name__ == "__main__":
