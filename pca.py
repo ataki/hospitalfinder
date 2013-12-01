@@ -12,8 +12,8 @@ class Model():
 		pass
 
 
-	def pca(self, x):
-		x = np.float(x.T)
+	def pcaFun(self, x):
+		x = np.float_(x.T)
 		NoOfExamples = x.shape[1]
 		NoOfFeatures = x.shape[0]
 
@@ -27,7 +27,7 @@ class Model():
 
 		S = S / NoOfFeatures # finish building S matrix
 
-		evalues, evectors = eigh(x, eigvals=(NoOfFeatures-self.k,NoOfFeatures-1)) # find the k top eigenvectors
+		evalues, evectors = eigh(S, eigvals=(NoOfFeatures-self.k,NoOfFeatures-1)) # find the k top eigenvectors
 
 		xReduced = np.dot(evectors.T, x) # calculate the input features in the low dimensional space
 
