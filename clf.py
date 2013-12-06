@@ -14,13 +14,10 @@ from sklearn.cluster import KMeans
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.decomposition import PCA
 from sklearn.cross_decomposition import CCA
-<<<<<<< HEAD
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
-=======
-from sklearn.ensemble import GradientBoostingClassifier
->>>>>>> 8ebbcb1bf4d9696148172fc680a69e936e0c487d
 from sklearn.feature_selection import SelectPercentile, f_classif
+from pca import Model as PCAModel
 import matplotlib.pyplot as plt
 
 HEADER = '\033[95m'
@@ -192,7 +189,9 @@ def extractLabel(line):
 	"""
 	Main label extraction fn.
 	"""
-	return extractTimeWithMd(line)
+	time = extractTimeWithMd(line)
+	if time > 60: time = 60
+	return time
 
 # ---------------------------------------------------------
 # Main
@@ -286,40 +285,51 @@ else:
 		'limit': LIMIT
 	})
 
+	nHighest = len(np.where(y==10)[0])
+	X = np.delete(X, np.where(y==10)[0], axis=1)
+
 	testY, testX = reader.read("data/2010", **{
 		'extractFeaturesFn': extractFeatures2010, 
 		'extractLabelsFn': extractLabel, 
 		'limit': LIMIT
 	})
 
-	kmX = (reader.read("data/2009", **{
-		'extractFeaturesFn': extractFeatures,
-		'extractLabelsFn': extractLabel,
-		'limit': LIMIT
-	}))[1]
+	# kmX = (reader.read("data/2009", **{
+	# 	'extractFeaturesFn': extractFeatures,
+	# 	'extractLabelsFn': extractLabel,
+	# 	'limit': LIMIT
+	# }))[1]
 
-	km = KMeans(n_clusters=2).fit(kmX)
-	centers = km.fit_predict(X)
-	X = np.hstack([X, centers.reshape(-1,1)])
+	# km = KMeans(n_clusters=2).fit(kmX)
+	# centers = km.fit_predict(X)
+	# X = np.hstack([X, centers.reshape(-1,1)])
 
-	testCenters = km.fit_predict(testX)
-	testX = np.hstack([testX, testCenters.reshape(-1,1)])
+	# testCenters = km.fit_predict(testX)
+	# testX = np.hstack([testX, testCenters.reshape(-1,1)])
 
-	print "------ Try Multinomial Naive Bayes -------"
-	nb = MultinomialNB()
-	nb.fit(X, y)
-	print "Accuracy: ", nb.score(X,y)
-	print "Error: ", calculateError(nb, X, y)
+	# print "------ Try Multinomial Naive Bayes -------"
+	# nb = MultinomialNB()
+	# nb.fit(X, y)
+	# print "Accuracy: ", nb.score(X,y)
+	# print "Error: ", calculateError(nb, X, y)
 
-	print "------ Try Random Forests -------"
-	rfc = RandomForestClassifier()
-	rfc.fit(X, y)
-	rfc.fit(X, y)
-	print "Accuracy: ", rfc.score(X, y)
-	print "Error: ", calculateError(rfc, X, y)
+	# print "------ Try Random Forests -------"
+	# rfc = RandomForestClassifier()
+	# rfc.fit(X, y)
+	# rfc.fit(X, y)
+	# print "Accuracy: ", rfc.score(X, y)
+	# print "Error: ", calculateError(rfc, X, y)
 
-	print "------- Try One VS One SVMs -------"
-	ovoc = OneVsOneClassifier(LinearSVC(random_state=0))
-	ovoc.fit(X, y)
-	print "Accuracy: ", ovoc.score(X, y)
-	print "Error: ", calculateError(ovoc, X, y)
+	# print "------- Try One VS One SVMs -------"
+	# ovoc = OneVsOneClassifier(LinearSVC(random_state=0))
+	# ovoc.fit(X, y)
+	# print "Accuracy: ", ovoc.score(X, y)
+	# print "Error: ", calculateError(ovoc, X, y)
+
+	# print "------ Try PCA -------"
+	# model = PCAModel(3)
+	# features = model.pca(X)
+	# nb = MultinomialNB()
+	# nb.fit(features, y)
+	# print "Accuracy: ", nb.score(feau,y)
+	# print "Error: ", calculateError(nb, X, y)
