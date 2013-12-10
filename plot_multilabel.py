@@ -97,7 +97,6 @@ def plot_subfigure(X, Y, subplot, title, transform):
 
 
 pl.figure(figsize=(8, 6))
-
 X, Y = make_multilabel_classification(n_classes=9, n_labels=1,
                                       allow_unlabeled=True,
                                       random_state=1)
