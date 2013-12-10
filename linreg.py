@@ -4,7 +4,7 @@ Weighted and unweighted linear regression
 
 import sys
 import numpy as np
-from sklearn import linear_model, feature_selection, cross_validation
+from sklearn import linear_model, feature_selection, cross_validation, cluster
 import matplotlib.pyplot as plt
 
 from utils import reader, mappings, extractor
@@ -145,6 +145,10 @@ def fsel(model, X, Y):
 	X = selector.transform(X)
 	return X
 
+def addKMeansFeatures(X, Y):
+	km = cluster.KMeans(n_clusters=80)
+	return np.hstack((X, km.fit_transform(X, Y)))
+
 def main(argv):
 	if len(argv) < 2:
 		print "Usage: python linear_regression.py <data>"
@@ -163,8 +167,11 @@ def main(argv):
 	X = XY[:, :-1]
 	Y = XY[:, -1]
 	print len(Y)
-	# 2010: 417/31229, not acceptable
-	# TODO: Filter before each training, not on global dataset
+
+	# Add K-means features
+	X = addKMeansFeatures(X, Y)
+
+	# Create model
 
 	# model = linear_model.LinearRegression()
 
@@ -176,16 +183,17 @@ def main(argv):
 
 	# model = linear_model.Ridge(alpha=100)
 
-	# model = linear_model.RidgeCV(normalize=True, alphas=[0.001, 0.01, 0.05, 0.1, 0.2, 0.5, 1, 10, 100, 1000, 10000, 100000])
-	# model.fit(X, Y)
-	# print model.alpha_
+	model = linear_model.RidgeCV(normalize=True, alphas=[0.001, 0.01, 0.05, 0.1, 0.2, 0.5, 1, 10, 100, 1000, 10000, 100000])
+	model.fit(X, Y)
+	print model.alpha_
 
-	model = linear_model.ElasticNet(alpha=0.1, l1_ratio=0.1)
+	# model = linear_model.ElasticNet(alpha=0.1, l1_ratio=0.1)
 
 	model.fit(X, Y)
 	print model.intercept_
 	print model.coef_
 
+	# Feature selection, increases performance a lot
 	X = fsel(model, X, Y)
 
 	# Error over m
