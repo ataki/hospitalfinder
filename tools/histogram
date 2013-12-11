@@ -10,7 +10,7 @@ import numpy
 import sys
 
 def plot_count(fp, plot_name):
-	data = [float(l) for l in fp]
+	data = [int(l) for l in fp]
 
 	counts = {}
 	for point in data:

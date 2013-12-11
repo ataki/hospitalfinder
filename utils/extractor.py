@@ -39,7 +39,7 @@ def extract(line, name, mapping_tup):
 			(start, end, line[start:end], str(typefn)))
 	
 	# process value based on name
-	if name in ["dayofweek", "injury", "isPrimaryPhysician", 
+	if name in ["dayOfWeek", "injury", "isPrimaryPhysician", 
 		"isReferred", "seenBefore", "majorReason",
 		"hasComputerForPatientInfo", "eveningWeekendVistsAllowed", 
 		"hasComputerForPrescriptionOrders", "hasComputerForViewingLabTestOrders",
