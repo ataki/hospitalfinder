@@ -72,3 +72,12 @@ TODO:
 - We have currently a mix of office types. Ok, taking out office types definitely gives an improvement. We get higher accuracy when we predict on training data vs predicting on test data when we filter out by officeSettings (non-private practice). (.53 accuracy for NB and RFC)
 - For private practice, get no improvement for test or training.
 - 
+
+						|	Multinomial NB 	|	Random Forest Classifier   |	Logistic Regression 	| 
+---------------------------------------------------------------------------------------------------------
+Accuracy (percent)  	|      0.485 		| 			0.478 			   |   			0.476  			|
+---------------------------------------------------------------------------------------------------------
+Avg Error (minutes)		|	    7.30    	| 			7.56 			   |			7.38 			|
+---------------------------------------------------------------------------------------------------------
+
+
