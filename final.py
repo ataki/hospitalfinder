@@ -9,6 +9,7 @@ import numpy as np
 from sklearn.linear_model import RidgeCV
 from sklearn import feature_selection, cross_validation
 from sklearn.naive_bayes import MultinomialNB
+import matplotlib.pyplot as plt
 
 HEADER = '\033[95m'
 OKBLUE = '\033[94m'
@@ -110,6 +111,11 @@ def cv(model, X, Y):
     # plt.hist(predictions)
     # plt.show()
 
+def printValueDistribution(arr):
+    distincts = set(arr)
+    for val in distincts:
+        print "%d : %d" % (val, len(np.where(arr == val)[0])) 
+
 def fsel(model, X, Y):
     # Feature selection
     selector = feature_selection.RFECV(model)
@@ -121,7 +127,9 @@ def fsel(model, X, Y):
     return selector
 
 if __name__ == "__main__":
-    main(sys.argv)
+    # main(sys.argv)
+    print WARNING + "Don't call this via the command line; instead, open up ipython and type in `from final import *`"
+    sys.exit(1)
 else:
 
     # -----------------------------------------------------------
@@ -220,12 +228,15 @@ else:
     print "The following variables shall be defined."
     print "Indices in various array correspond to one another"
     print "------------------------------------------------------------------------------"
-    print "msp_LinearRegression_i   : indices of misprinted examples from linreg"
-    print "msp_LinearRegression_y   : mispredicted labels from linear regression"
-    print "msp_LinearRegression     : mispredictions from linreg"
-    print "msp_Classification_i     : indices of misprinted examples from classification"
-    print "msp_Classification_y     : mispredicted labels from classification"
-    print "msp_Classification       : mispredictions from classification"
+    print "msp_LinearRegression_i   : indices of mispredictions > 5"
+    print "msp_LinearRegression_y   : mispredicted labels"
+    print "msp_LinearRegression     : mispredictions"
+    print "msp_Classification_i     : indices of misclassified examples"
+    print "msp_Classification_y     : mispredicted labels"
+    print "msp_Classification       : mispredictions"
+    print ""
+    print "msp_Common_i             : indices of common mispredictions"
+    print "msp_Common_y             : mispredicted labels common to both"
     print "------------------------------------------------------------------------------"
     print ENDC
 
@@ -238,3 +249,13 @@ else:
     msp_Classification_i = np.where(_clf_diff > 0)[0]
     msp_Classification_y = testY[msp_Classification_i]
     msp_Classification = _clf_diff[msp_Classification_i]
+
+    A = set(msp_Classification_i)
+    B = set(msp_LinearRegression_i)
+    msp_Common_i = list(A & B)
+    msp_Common_y = testY[msp_Common_i]
+
+    msp_Uncommon_i = list(A.difference(B))
+    msp_Uncommon_y = testY[msp_Uncommon_i]
+
+
