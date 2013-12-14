@@ -35,10 +35,10 @@ LIMIT = None
 KFOLD_LEVEL = 10
 
 # Divide labels into buckets to get more consistent data
-LABEL_BUCKET_SIZE = 10
+LABEL_BUCKET_SIZE = 20
 
 # How many buckets to plot for the error graph
-EG_N = 50
+EG_N = 300
 
 # ---------------------------------------------------------
 # Extraction
@@ -218,7 +218,7 @@ def printResults(score, results, testY):
         diff = results[i] - testY[i] 
         print "%d,%d,%d" % (pred, actual, diff)
 
-def plotErrorGraph(model, X, y, testX, testY, rawY, rawTestY):
+def plotErrorGraph(model, X, y, testX, testY, Y_raw, testY_raw):
     global EG_N
     """
     Prints the training - testing error graph found
@@ -227,19 +227,30 @@ def plotErrorGraph(model, X, y, testX, testY, rawY, rawTestY):
     """
     trainErrors = []
     testErrors = []
-    ms = [int(n) for n in np.linspace(30, len(y), num=EG_N, endpoint=False)]
-    for i in ms:
-        # print X[:i].shape, y[:i].shape
-        _X = np.random.permutation(X)
-        _y = np.random.permutation(y)
-        print _X.shape, _y.shape
-        model.fit(_X[:i], _y[:i])
-        # trainErrors.append(1 - model.score(X, y))
-        trainErrors.append(calculateError(model.predict(X), y, rawY))
-        # testErrors.append(1 - model.score(testX, testY))
-        testErrors.append(calculateError(model.predict(testX), testY, rawTestY))
+
+    ms = [int(n) for n in np.linspace(30, 2000, num=EG_N, endpoint=False)]
+    # ms = [int(n) for n in np.linspace(30, 10000, num=500, endpoint=False)]
+    # ms += [int(n) for n in np.linspace(10000, len(y), num=, endpoint=False)]
+    for i in ms:        
+        print X[:i].shape, y[:i].shape
+        
+        Xys = np.hstack([X, y.reshape(-1,1), Y_raw.reshape(-1,1)])
+        np.random.permutation(Xys)
+        X = Xys[:, :-2]
+        y = Xys[:, -2]
+        Y_raw = Xys[:, -1]
+
+        model.fit(X[:i], y[:i])
+        trainErrors.append(1 - model.score(X[:i], y[:i]))
+        testErrors.append(1 - model.score(testX[:i], testY[:i]))
+        # trainErrors.append(calculateError(model.predict(X[:i]), y[:i], Y_raw[:i]))
+        # testErrors.append(calculateError(model.predict(testX[:i]), testY[:i], testY_raw[:i]))
+    
+    # fig = plt.figure()
+    # ax = fig.add_subplot(2,1,1)
     plt.plot(ms, trainErrors, 'g-')
     plt.plot(ms, testErrors, 'r-')
+    # ax.set_xscale('log')
     plt.show()
 
 def quickPlot(model, X, y):
@@ -250,15 +261,15 @@ def quickPlot(model, X, y):
     plt.show()
 
 def calculateError(prediction, y, raw):
+    global LABEL_BUCKET_SIZE
     """ May modify predictions """
     assert(len(prediction) == len(y))
     assert(len(prediction) == len(raw))
     N = len(prediction)
     diff = np.abs(np.subtract(prediction, y))
     idxs = np.where(diff != 0)[0]
-    print len(idxs)
     for i in np.arange(10, 100, 10):
-        prediction[np.where(prediction == i)] = i + 5
+        prediction[np.where(prediction == i)] = i + (LABEL_BUCKET_SIZE / 2)
     diff = np.sum(np.abs(np.subtract(prediction[idxs], raw[idxs])))
     return float(diff) / float(N)
 
@@ -355,19 +366,19 @@ else:
     testY_raw[np.where(testY_raw > 60)] = 60
     # testY_raw = testY_raw[idxs]
 
-    kmX = (reader.read("data/2009", **{
-        'extractFeaturesFn': extractFeatures,
-        'extractLabelsFn': extractLabel,
-        'limit': LIMIT
-    }))[1]
+    # kmX = (reader.read("data/2009", **{
+    #     'extractFeaturesFn': extractFeatures,
+    #     'extractLabelsFn': extractLabel,
+    #     'limit': LIMIT
+    # }))[1]
 
     # Add clustering classification
-    km = KMeans(n_clusters=50).fit(kmX)
-    centers = km.fit_predict(X)
-    X = np.hstack([X, centers.reshape(-1,1)])
+    # km = KMeans(n_clusters=50).fit(kmX)
+    # centers = km.fit_predict(X)
+    # X = np.hstack([X, centers.reshape(-1,1)])
 
-    testCenters = km.fit_predict(testX)
-    testX = np.hstack([testX, testCenters.reshape(-1,1)])
+    # testCenters = km.fit_predict(testX)
+    # testX = np.hstack([testX, testCenters.reshape(-1,1)])
 
     # ------- Run Algorithms -------
 
