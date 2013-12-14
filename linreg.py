@@ -91,9 +91,15 @@ def extractFeatures(line):
 	for (name, spec) in featureCandidates:
 		value = extractor.extract(line, name, spec)
 		res.append(value)
-		if name in ['age', 'height', 'weight', 'temperature']:
-			# res.append(value * value)
-			res.append(np.sqrt(value))
+		# if name in ['age', 'height', 'weight', 'temperature']:
+		# 	res.append(pow(value, 3))
+		# 	res.append(pow(value, 2))
+		# 	if value > -7:
+		# 		res.append(pow(value, .5))
+		# 		res.append(pow(value, 1/3))
+		# 	else:
+		# 		res.append(0)
+		# 		res.append(0)
 	return res
 
 def extractTarget(line):
@@ -122,8 +128,9 @@ def cv(model, X, Y):
 			predictions.append(prediction)
 		# print 'test error: ', np.mean(np.absolute(model.predict(X_test) - Y_test))
 
-	print 'avg training error: ', np.mean(trainingErrors)
-	print 'avg test error: ', np.mean(testErrors)
+	# print 'avg training error: ', np.mean(trainingErrors)
+	# print 'avg test error: ', np.mean(testErrors)
+	return (np.mean(trainingErrors), np.mean(testErrors))
 
 	# plt.figure()
 	# plt.hist(testErrors, 30)
@@ -139,15 +146,40 @@ def fsel(model, X, Y):
 	# Feature selection
 	selector = feature_selection.RFECV(model)
 	selector = selector.fit(X, Y)
-	print selector.support_
-	print selector.ranking_
+	# print selector.support_
+	# print selector.ranking_
 	# print selector.grid_scores_
+	selectedFeatures = []
+	for i in range(len(selector.support_)):
+		if selector.support_[i]:
+			if i < len(featureCandidates):
+				selectedFeatures.append(featureCandidates[i][0])
+			else:
+				selectedFeatures.append('km-%s' % (i - len(featureCandidates)))
+	print 'selected features:', selectedFeatures
 	X = selector.transform(X)
 	return X
 
 def addKMeansFeatures(X, Y):
-	km = cluster.KMeans(n_clusters=80)
+	K = 50
+	print 'added k-means features, k =', K
+	km = cluster.KMeans(n_clusters=K)
 	return np.hstack((X, km.fit_transform(X, Y)))
+
+def plotTrainingTestError(model, X, Y):
+	ms = [20, 50, 100] + range(200, len(Y), len(Y) / 25)
+	trainErrors = []
+	testErrors = []
+	for m in ms:
+		trainError, testError = cv(model, X[:m], Y[:m])
+		trainErrors.append(trainError)
+		testErrors.append(testError)
+	plt.plot(ms, trainErrors, 'g-')
+	plt.plot(ms, testErrors, 'r-')
+	print ms
+	print trainErrors
+	print testErrors
+	plt.show()
 
 def main(argv):
 	if len(argv) < 2:
@@ -161,12 +193,56 @@ def main(argv):
 	})
 
 	# Take out invalid values
+	takeOutInvalid = False
 	XY = np.array([xy for xy in np.hstack((X, Y.reshape(-1, 1)))
-			if all([i > -7 for i in xy])])
+			if not takeOutInvalid or all([i > -7 for i in xy])])
 	XY = np.random.permutation(XY)
 	X = XY[:, :-1]
 	Y = XY[:, -1]
 	print len(Y)
+
+	# Applying average feature values to invalid values
+	averages = []
+	numInvalidByFeature = []
+	for j in range(len(X[0])):
+		averages.append(sum([x[j] for x in X]) / len(X))
+		numInvalidByFeature.append(0)
+	numInvalid = 0
+	numBadX = 0
+	numInvalidInX = 0
+	cleanX = []
+	cleanY = []
+	for i in range(len(X)):
+		numInvalidInX = 0
+		for j in range(len(X[0])):
+			if X[i][j] <= -7:
+				X[i][j] = averages[j]
+				numInvalid = numInvalid + 1
+				numInvalidInX = numInvalidInX + 1
+				numInvalidByFeature[j] = numInvalidByFeature[j] + 1
+		if numInvalidInX > len(X[0]) / 15:
+			numBadX = numBadX + 1
+		else:
+			cleanX.append(X[i])
+			cleanY.append(Y[i])
+	print numInvalid
+	# 107123
+	print numBadX
+	# 9854 xs have >1/10 invalid cells
+	# 14582 xs have >1/15 invalid cells
+	# 19452 xs have >1/20 invalid cells
+
+	# Take out invalid features (i.e. features with too many invalid values)
+	invalidFeatures = [] # Indices of invalid features
+	for j in range(len(X[0])):
+		if numInvalidByFeature[j] > len(X) / 10:
+			invalidFeatures.append(j)
+	for i in range(len(cleanX)):
+		cleanX[i] = np.delete(cleanX[i], invalidFeatures)
+
+	X = np.array(cleanX)
+	Y = np.array(cleanY)
+	print X.shape, Y.shape
 
 	# Add K-means features
 	X = addKMeansFeatures(X, Y)
@@ -175,35 +251,34 @@ def main(argv):
 
 	# model = linear_model.LinearRegression()
 
-	# model = linear_model.Lasso(alpha=.01, max_iter=100000)
+	# model = linear_model.Lasso(alpha=.01)
 
-	# model = linear_model.LassoCV(max_iter=10000, alphas=[0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000])
+	# model = linear_model.LassoCV(alphas=[0.001, 0.01, 0.1, 1, 10, 100])
 	# model.fit(X, Y)
 	# print model.alpha_
 
 	# model = linear_model.Ridge(alpha=100)
 
-	model = linear_model.RidgeCV(normalize=True, alphas=[0.001, 0.01, 0.05, 0.1, 0.2, 0.5, 1, 10, 100, 1000, 10000, 100000])
+	model = linear_model.RidgeCV(normalize=True, alphas=[0.0001, 0.001, 0.01, 0.05, 0.1, 0.2, 0.5, 1, 10, 100, 1000, 10000, 100000])
 	model.fit(X, Y)
-	print model.alpha_
+	print 'alpha:', model.alpha_
 
-	# model = linear_model.ElasticNet(alpha=0.1, l1_ratio=0.1)
+	# model = linear_model.ElasticNet(alpha=.1, l1_ratio=.1)
 
 	model.fit(X, Y)
-	print model.intercept_
-	print model.coef_
+	print 'intercept:', model.intercept_
+	print 'coef:', model.coef_
 
 	# Feature selection, increases performance a lot
 	X = fsel(model, X, Y)
 
 	# Error over m
-	for m in [10, 20, 50, 100] + range(200, len(Y), 200):
-		print 'm = %s' % m
-		cv(model, X[:m], Y[:m])
+	plotTrainingTestError(model, X, Y)
 
-	cv(model, X, Y)
+	# print cv(model, X, Y)
 
 
+	# OLD CODE
 	# model = LinearRegressionModel()
 
 	# Run cross validation
