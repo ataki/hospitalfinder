@@ -61,23 +61,21 @@ TODO:
 - Try to even out number of labels (i.e. reduce ones that are 10 randomly). Results didn't help
 
 12/9
-- Try to get bigger dataset - dififcult because the mappings are off and there aren't consistent set of features between 2003 - 2010
-- Tried RFC's with 20 - 100 plots. Accuracy was the same (0.51044 accuracy on training data,  0.48484 accuracy on test data). Average prediction difference was 8.06 minutes.
+- Try to get bigger dataset. Difficult because the mappings are off and there aren't consistent set of features between 2003 to 2010
+- Tried RFC's with 20 to 100 plots. Accuracy was the same (0.51044 accuracy on training data,  0.48484 accuracy on test data). Average prediction difference was 8.06 minutes
 - Finallly tried logistic regression. We get accuracy of 0.50535, an improvement over Naive Bayes but slightly lower than Random Forests. Interestingly, we are mispredicting even though we're doing a pretty good job
-- Logistic regression with weight tuning (give less weight to the 10's); with weights {10: 0.5}, we got accuracy of 0.49953.
-- What's going on with the underlying data???? It's so inherently noisy because...why? >> hard to separate out features. My guess is that most features are not that great predictors by themselves of time with md, and the rest of the features don't cluster well.
+- Logistic regression with weight tuning (give less weight to the 10's); with weights `{10: 0.5}`, we got accuracy of 0.49953.
+- What's going on with the underlying data???? It's so inherently noisy because...why? hard to separate out features. My guess is that most features are not that great predictors by themselves of time with md, and the rest of the features don't cluster well.
 
 12/10
 - Maybe a better idea would be to predict physician office type?
 - We have currently a mix of office types. Ok, taking out office types definitely gives an improvement. We get higher accuracy when we predict on training data vs predicting on test data when we filter out by officeSettings (non-private practice). (.53 accuracy for NB and RFC)
-- For private practice, get no improvement for test or training.
-- 
+- For private practice, get no improvement for test or training
 
-						|	Multinomial NB 	|	Random Forest Classifier   |	Logistic Regression 	| 
----------------------------------------------------------------------------------------------------------
-Accuracy (percent)  	|      0.485 		| 			0.478 			   |   			0.476  			|
----------------------------------------------------------------------------------------------------------
-Avg Error (minutes)		|	    7.30    	| 			7.56 			   |			7.38 			|
----------------------------------------------------------------------------------------------------------
+| smthg               |	Multinomial NB 	|	Random Forest Classifier   |	Logistic Regression 	| 
+----------------------|-----------------|----------------------------------|----------------------------|
+| Accuracy (percent)  | 0.485 		| 	0.478 			   |   	0.476  			|
+| Avg Error (minutes) |	7.30    	| 	7.56 			   |			7.38 	|
+
 
 
